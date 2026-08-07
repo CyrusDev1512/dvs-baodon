@@ -1,7 +1,9 @@
-# DVS — Báo đơn (Track A: 711 Dashboard Scraper)
+# DVS — Báo đơn
 
-Scraper Playwright đọc filter **`đơn cần báo`** trên dashboard 7-Eleven Đài Loan (myship),
-trả về danh sách `OrderToReport` cho backend (bot Telegram / reconcile loop — Track B, repo khác).
+Tự động hoá nghiệp vụ **Báo đơn**: phát hiện đơn đã tới cửa hàng 7-Eleven (khách chưa
+lấy) và nhắc Sale phụ trách. Gồm 2 track trong cùng repo:
+- **Track A** — bộ đọc dữ liệu dashboard vận đơn (`src/scraper/`) — **đang chặn: chưa có tài khoản**
+- **Track B** — backend reconcile + gửi tin (`src/reconcile.py` & đồng bọn) — **đã chạy được với mock**
 
 ## Đọc gì trước
 
@@ -14,14 +16,19 @@ trả về danh sách `OrderToReport` cho backend (bot Telegram / reconcile loop
 ```
 src/
   config.py               # get_settings() — nguồn cấu hình duy nhất (.env)
+  clock.py                # Clock inject được (SystemClock / FixedClock)
+  rules.py                # quy tắc thuần: order_key, quiet hours, mốc nhắc, quá hạn
+  db.py                   # SQLite: trạng thái đơn + audit gửi + sổ ngoại lệ
+  notify.py               # Notifier/ImageStore ABC + bản DryRun + RateLimiter
+  reconcile.py            # run_cycle() — 4 quy tắc gửi, trái tim Track B
+  run_once.py             # CLI: chạy 1 lượt rồi thoát (lên lịch bằng Task Scheduler)
   scraper/
-    interface.py          # HỢP ĐỒNG với backend — không sửa
-    seven_eleven.py       # SevenElevenScraper (skeleton, chờ O1-O4)
-tests/
-  test_interface.py       # test normalization, chạy được ngay
-  test_seven_eleven_offline.py  # test parse fixture (skip khi chưa có fixture)
-  fixtures/               # dashboard_sample.html (sanitized) sẽ lưu ở đây
-docs/                     # 2 file context + ảnh chụp dashboard
+    interface.py          # HỢP ĐỒNG giữa 2 track — không sửa
+    seven_eleven.py       # SevenElevenScraper (skeleton, chờ tài khoản + O1-O6)
+    mock.py               # MockScraper — dữ liệu giả để chạy Track B ngay
+tests/                    # 40+ test: rules/db/notify/reconcile/e2e timeline
+docs/                     # context nghiệp vụ + flow + dashboard kế hoạch
+data/, logs/              # SQLite + sổ ngoại lệ dạng text (không commit)
 debug/                    # HTML/screenshot khi ParseError (không commit)
 .auth/                    # Playwright storage_state (không commit)
 ```
@@ -35,11 +42,25 @@ python -m playwright install chromium            # idempotent
 cp .env.example .env                             # rồi điền credential
 ```
 
-## Chạy
+## Chạy Track B ngay (không cần tài khoản dashboard)
+
+```bash
+python -m src.run_once --mock                          # 1 lượt trọn vẹn, dry-run
+python -m src.run_once --mock --now "2026-08-07 09:05" # demo mốc nhắc 09:00
+pytest                                                 # toàn bộ test
+```
+
+Chạy lần 1 → 12 đơn MỚI được "gửi" (in `[DRY-RUN] GỬI ...`). Chạy lại cùng giờ →
+"chưa tới mốc" (chống báo trùng). `--now` lùi về 21:30 → "hoãn vì QUIET_HOURS".
+Khi có tài khoản, swap `MockScraper()` → `SevenElevenScraper()` trong `run_once.py`.
+
+Chưa có gì gửi thật: `DryRunNotifier`/`DryRunImageStore` chỉ in ra — kênh Messenger
+an toàn và khoá tra ảnh bot Telegram là 2 quyết định còn chờ.
+
+## Chạy Track A (khi có tài khoản)
 
 ```bash
 python -m src.scraper.seven_eleven --dry-run     # in danh sách đơn ra JSON
-pytest                                           # test offline
 ```
 
 Lần chạy đầu: đặt `HEADLESS=false`, login tay (nếu có CAPTCHA), session được lưu vào

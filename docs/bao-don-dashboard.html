@@ -256,6 +256,7 @@
   }
   .chip .sw { width: 8px; height: 8px; border-radius: 50%; flex: none; }
   .chip.st { border: none; }
+  .chip.st.done     { background: var(--st-good-bg);    color: var(--st-good); }
   .chip.st.good     { background: var(--st-good-bg);    color: var(--st-good); }
   .chip.st.wait     { background: var(--st-warn-bg);    color: var(--st-warn); }
   .chip.st.risk     { background: var(--st-serious-bg); color: var(--st-serious); }
@@ -346,16 +347,16 @@
     <div class="meta">Dựa trên <code>bao-don-flow.md</code> v1.1 · 07/08/2026 · Khung thời gian mục tiêu: <b>1–3 ngày làm việc</b> (~24 giờ)</div>
     <div class="banner">
       <span class="dot"></span>
-      <p><strong>Đang bị chặn:</strong> team <b>chưa có quyền truy cập dashboard vận đơn</b>. Toàn bộ Track A (story 3–8) đứng yên cho tới khi có tài khoản. Đồng hồ 1–3 ngày bên dưới tính từ <b>thời điểm được cấp quyền</b> — việc gấp nhất hiện tại là xin quyền, không phải việc kỹ thuật nào khác.</p>
+      <p><strong>Đang bị chặn:</strong> team <b>chưa có quyền truy cập dashboard vận đơn</b> — Track A (story 3–8) vẫn đứng yên. Trong lúc chờ, <b>Track B đã được dựng xong và chạy được end-to-end với dữ liệu giả</b> (story 9, 10 hoàn thành; 11, 12 xong phần mock/dry-run). Khi có tài khoản, chỉ còn Track A + nối 2 đầu thật (ảnh Telegram, gửi Messenger).</p>
     </div>
   </header>
 
   <section aria-label="Tổng quan">
     <div class="tiles">
       <div class="tile">
-        <div class="label">Story cần làm</div>
-        <div class="value">12</div>
-        <div class="note">3 nhóm: khảo sát · bộ đọc · backend</div>
+        <div class="label">Story đã xong</div>
+        <div class="value">4 <small>/ 12</small></div>
+        <div class="note">Track B xong (story 9, 10 + phần mock của 11, 12)</div>
       </div>
       <div class="tile">
         <div class="label">Thời gian dự kiến</div>
@@ -377,8 +378,9 @@
 
   <section>
     <h2>Kế hoạch 3 ngày</h2>
-    <p class="sub">Ngày 1 dồn mọi câu hỏi mở về một mối để hai ngày sau chỉ còn code. Story có chip
-    <b>Chờ truy cập</b> phụ thuộc blocker; chip <b>Rủi ro mở</b> nghĩa là làm được nhưng đang tựa trên câu hỏi chưa chốt.</p>
+    <p class="sub">Track B (cột Ngày 3) đã được kéo lên làm trước trong lúc chờ tài khoản: chạy end-to-end
+    bằng <code>python -m src.run_once --mock</code>, 40 test xanh. Story <b>Chờ truy cập</b> vẫn phụ thuộc blocker;
+    <b>◐ Xong phần mock</b> = khung đã chạy, còn đầu nối thật.</p>
     <div class="board">
 
       <div class="day">
@@ -442,28 +444,28 @@
       <div class="day">
         <div class="day-head">
           <h3>Ngày 3 <span class="goal">Track B — backend &amp; tích hợp</span></h3>
-          <span class="sum">~9 giờ</span>
+          <span class="sum">đã làm trước</span>
         </div>
         <div class="stories">
           <div class="story">
-            <div class="top"><span class="name">9 · Database + reconcile</span><span class="hrs">3 h</span></div>
-            <p class="why">Đối chiếu theo mã đơn: đơn mới / đơn cũ còn trong lọc / đơn biến mất — áp 4 quy tắc gửi.</p>
-            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st good">● Sẵn sàng</span></div>
+            <div class="top"><span class="name">9 · Database + reconcile</span><span class="hrs">✓</span></div>
+            <p class="why">SQLite + 4 quy tắc gửi (mới / nhắc theo mốc / đóng khi rời lọc / quá hạn vào sổ). Chống báo trùng, mốc bị lỡ tự bắn bù, đơn quay lại sau khi đóng → báo ngay + ghi sổ.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st done">✓ Hoàn thành</span></div>
           </div>
           <div class="story">
-            <div class="top"><span class="name">10 · Hàng đợi gửi</span><span class="hrs">2 h</span></div>
-            <p class="why">Nhắc lại theo <code>REMIND_TIMES</code>, tôn trọng <code>QUIET_HOURS</code>, giãn nhịp <code>NOTIFY_RATE_PER_MIN</code>.</p>
-            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st good">● Sẵn sàng</span></div>
+            <div class="top"><span class="name">10 · Hàng đợi gửi</span><span class="hrs">✓</span></div>
+            <p class="why">Nhắc theo <code>REMIND_TIMES</code>, tôn trọng <code>QUIET_HOURS</code> (qua nửa đêm), giãn nhịp <code>NOTIFY_RATE_PER_MIN</code>. Tin hoãn tự "nợ" sang lượt sau.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st done">✓ Hoàn thành</span></div>
           </div>
           <div class="story">
-            <div class="top"><span class="name">11 · Notifier: lấy ảnh từ bot Telegram + gửi Sale qua Messenger</span><span class="hrs">2 h</span></div>
-            <p class="why">Nguồn ảnh đã chốt: bot Telegram, tra theo mã đơn. Rủi ro còn lại: cách gửi Messenger an toàn — tự động hoá tài khoản cá nhân vi phạm điều khoản Meta.</p>
-            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st risk">● Rủi ro mở</span></div>
+            <div class="top"><span class="name">11 · Notifier: lấy ảnh từ bot Telegram + gửi Sale qua Messenger</span><span class="hrs">1 h</span></div>
+            <p class="why">Xong phần khung + dry-run (ảnh bắt buộc, hỗ trợ nhiều ảnh/album). Phần thật chờ 2 quyết định: khoá tra ảnh của bot và cách gửi Messenger an toàn (ToS Meta).</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st wait">◐ Xong phần mock</span></div>
           </div>
           <div class="story">
-            <div class="top"><span class="name">12 · Sổ ngoại lệ + log + chạy thật một lượt</span><span class="hrs">2 h</span></div>
-            <p class="why">End-to-end trên dữ liệu thật; mọi ngoại lệ ghi STT + lý do + thời điểm cho người xử lý.</p>
-            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st good">● Sẵn sàng</span></div>
+            <div class="top"><span class="name">12 · Sổ ngoại lệ + log + chạy thật một lượt</span><span class="hrs">1 h</span></div>
+            <p class="why">Sổ ngoại lệ (SQLite + file text) và audit gửi tin đã chạy; e2e với dữ liệu giả đã xanh (40 test). Còn lại: chạy một lượt trên dữ liệu thật khi có tài khoản.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st wait">◐ Xong phần mock</span></div>
           </div>
         </div>
       </div>
@@ -474,7 +476,8 @@
   <section>
     <h2>Kiến trúc hệ thống (TO-BE)</h2>
     <p class="sub">Khác biệt cốt lõi so với quy trình tay: tách <b>tần suất quét</b> khỏi <b>tần suất nhắn</b>,
-    và chỉ mở trang chi tiết cho đơn mới. Nút viền cam đứt là điểm chưa xác nhận.</p>
+    và chỉ mở trang chi tiết cho đơn mới. Nút viền cam đứt là điểm chưa xác nhận. Khối «Hệ thống báo đơn»
+    (reconcile, database, hàng đợi, sổ ngoại lệ) <b>đã được code và test xong</b> — hai đầu nối (bộ đọc dữ liệu, notifier thật) còn chờ.</p>
     <div class="diagram-card">
       <pre class="mermaid">
 flowchart LR

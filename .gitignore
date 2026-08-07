@@ -222,6 +222,11 @@ __marimo__/
 .auth/
 # Debug dumps (HTML/screenshot khi ParseError)
 debug/
+# Trạng thái runtime backend (SQLite + sổ ngoại lệ dạng text)
+data/
+logs/
+# Ảnh mẫu chứa dữ liệu khách thật (SĐT/địa chỉ) — không commit, chỉ tham khảo local
+baodon_exampleimage.png
 # OS / editor
 .DS_Store
 Thumbs.db

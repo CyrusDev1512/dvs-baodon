@@ -264,6 +264,16 @@ bằng lời thường:
 Bổ sung một câu mới phát sinh từ câu trả lời 1: **bot Telegram tra ảnh theo mã nào** —
 STT, mã `Sxxxx`, hay mã vận đơn `CCxxxx`? (hỏi người làm bot)
 
+### Chốt thêm 07/08/2026 (đợt 2) + phát hiện từ ảnh mẫu
+
+- **Ảnh là bắt buộc trong mọi tin gửi Sale** — không có ảnh thì KHÔNG gửi, ghi sổ
+  ngoại lệ cho người xử lý (giữ nguyên tắc "thà không báo còn hơn báo sai").
+- **Đơn đã đóng quay lại bộ lọc** → báo Sale lại ngay + ghi sổ ngoại lệ (bất thường).
+- Ảnh mẫu nhóm Messenger thật cho thấy cấu trúc tin: **album nhiều ảnh** (3–4 ảnh)
+  kèm caption địa chỉ/ghi chú, theo sau là **2 tin nhắn riêng: mã S (`S9663`) rồi
+  STT (`5079`)**. → Tin gửi tự động phải hỗ trợ nhiều ảnh; mẫu tin nên bắt chước
+  đúng cấu trúc này cho Sale dễ nhận diện (liên quan câu 4 / giai đoạn 3).
+
 ---
 
 ## 5. 🚧 Đang bị chặn
