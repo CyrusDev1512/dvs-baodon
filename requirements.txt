@@ -1,0 +1,4 @@
+# Target: Python 3.10 (máy đích có 3.10.12, Playwright 1.58 + chromium đã cài sẵn)
+playwright>=1.58
+python-dotenv>=1.0
+pytest>=8.0
