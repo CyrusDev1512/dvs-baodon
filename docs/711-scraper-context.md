@@ -13,8 +13,10 @@ You are building ONE component of an "order-inform" automation system. A Telegra
 another person) already captures each order when a seller posts it, and stores the customer's
 screenshot keyed by an order code. A reconcile loop needs to know, several times a day, WHICH
 orders are currently in a saved filter called `đơn cần báo` ("orders that need informing") on an
-internal shipping dashboard (a Taiwan 7-Eleven / forwarder web app). That dashboard has no API,
-so your job is to READ that filtered list with Playwright and return it as structured data.
+internal shipping dashboard (a Taiwan 7-Eleven / forwarder web app). That dashboard has no public API,
+so your job is to READ that filtered list and return it as structured data. Transport
+(browser automation vs. replaying the site's own internal HTTP calls) is an implementation
+detail — see O5/O6. Use whichever reliably reads the whole filter.
 
 Being in the `đơn cần báo` filter is itself the signal "this order has arrived and the customer
 has not picked it up yet." You do NOT compute status. You just return the rows in the filter.
@@ -71,6 +73,15 @@ Normalization (MUST match the backend exactly). Helper functions are provided in
   detail page. Prefer reading the list. Only open detail pages if the list lacks a needed field.
 - **O3** whether `STT` is globally unique or repeats per Sale (tell the backend; it flips one flag).
 - **O4** whether the `Sxxxx` code is shown on the dashboard at all.
+- **O5** open DevTools → Network → filter Fetch/XHR → reload the order list. Does the page
+  fetch its rows from a JSON endpoint? If yes, record: URL, method, params (especially the
+  page and status params), the field holding the shipping status, and its numeric value for
+  "arrived at store". Attach a sanitized sample response. If there is no JSON, note whether
+  the first HTML document already contains the table (server-rendered) or the table is built
+  by JS after load.
+- **O6** does the dashboard expose a bulk export (匯出 / 下載 / Excel / CSV)? Separately, does
+  the seller account receive an email or LINE notification when a parcel reaches the store?
+  Either one may remove the need to poll the list at all.
 - Pagination style, row selector, and how "Sale" and "STT" columns are labelled.
 
 ## Error handling & debugging
@@ -83,10 +94,13 @@ Normalization (MUST match the backend exactly). Helper functions are provided in
 ## CLI + tests (Definition of Done)
 - `python -m src.scraper.seven_eleven --dry-run` prints the parsed list as JSON. Against the real
   site it returns ≥1 order.
-- Save one real (sanitized) list page to `tests/fixtures/dashboard_sample.html` and write a test
-  that parses it offline into `OrderToReport` objects, so selector regressions are caught without
-  the live site.
-- `NOTES.md` records the confirmed answers to O1–O4 and the selectors used.
+- Save one real (sanitized) sample of whatever the scraper consumes — `dashboard_sample.html`
+  when parsing DOM/HTML, `orders_sample.json` when replaying an internal endpoint — under
+  `tests/fixtures/`, and write a test that parses it offline into `OrderToReport` objects, so
+  regressions are caught without the live site. The fixture contains real customer data: scrub
+  names, phone numbers and addresses BEFORE committing it.
+- `NOTES.md` records the confirmed answers to O1–O6, which transport was chosen and why, and
+  the selectors (or the endpoint contract) used.
 
 ## Explicitly NOT your job (owned by the backend, do not build)
 - The Telegram bot, the database, the reconcile loop, the notifier, the scheduler.
@@ -97,7 +111,9 @@ Python 3.10 (the target machine has 3.10.12). The interface uses `from __future_
 annotations`, so `str | None` and `list[...]` annotations work on 3.10. Playwright for Python is
 already installed on this machine (v1.58, chromium cached), so no install is normally needed;
 `python -m playwright install chromium` is idempotent if it is. Keep the module importable (the
-backend imports your class) AND runnable as a `--dry-run` CLI.
+backend imports your class) AND runnable as a `--dry-run` CLI. If the internal-endpoint route
+wins, `httpx` is the HTTP client. Playwright stays in the project for the login/session step
+either way.
 
 ## Reference implementation to crib from
 `~/PKBot/services/tcg_playwright_service.py` is an existing "log into a web app, then scrape"

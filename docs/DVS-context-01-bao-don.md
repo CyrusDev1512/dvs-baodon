@@ -117,7 +117,7 @@ Thay bước 3–5 của §3 bằng một vòng lặp tự động chạy **vài
 [Dashboard 7-11/forwarder]
         │  (đọc danh sách đơn ở trạng thái "đã tới cửa hàng, chưa lấy")
         ▼
-   Scraper (Playwright)  ──► danh sách OrderToReport
+   Bộ đọc dữ liệu  ──► danh sách OrderToReport
         ▼
    Reconcile loop  ──► so với DB: đơn nào MỚI cần báo? đơn nào đã báo rồi? đơn nào đã lấy?
         ▼
@@ -176,7 +176,11 @@ Thay bước 3–5 của §3 bằng một vòng lặp tự động chạy **vài
 - **Q4.** Nếu Sale không xử lý, có nhắc lại không? Sau bao lâu? Nhắc mấy lần? Sắp tới
   **hạn lấy hàng** thì có leo thang lên quản lý không?
 - **Q5.** Báo cho Sale bằng kênh nào — Telegram cá nhân, nhóm Telegram, hay Pancake?
-- **Q6.** Một ngày chạy mấy lần, vào giờ nào? (Hàng về theo ca hay rải đều?)
+- **Q6.** Một ngày chạy mấy lần, vào giờ nào? (Hàng về theo ca hay rải đều?) Lưu ý: tần suất
+  khả thi phụ thuộc kết quả O5/O6 bên Track A. Nếu đọc được endpoint nội bộ thì chạy mỗi 15
+  phút là bình thường; nếu phải mở trình duyệt thật mỗi lần thì thực tế chỉ chạy được 2–4
+  lần/ngày. Chênh lệch này quyết định khách nhận được thông báo sớm hay muộn vài tiếng, nên
+  đây là câu hỏi nghiệp vụ chứ không chỉ là câu hỏi kỹ thuật.
 - **Q7.** Khối lượng thực tế: bao nhiêu đơn/ngày, bao nhiêu Sale, bao nhiêu trang danh sách?
 - **Q8.** Ngoài Đài Loan còn thị trường/hệ thống vận chuyển nào cần báo đơn tương tự không?
   (Vì công ty bán đa quốc gia — nếu có, kiến trúc phải tách theo "nguồn").
@@ -207,6 +211,10 @@ Nghiệp vụ được coi là **tự động hoá xong** khi:
 | *(chưa có)* | Track B — backend | Bot Telegram, DB, reconcile loop, notifier, scheduler |
 
 Nếu §4 (Q1) hoặc §8 (A2/A3) thay đổi, **`711-scraper-context.md` phải được sửa theo**.
+
+Chiều ngược lại thì không: quyết định transport (O5/O6) **không** làm thay đổi file này. Nếu
+một quyết định kỹ thuật buộc phải sửa tài liệu nghiệp vụ, đó là dấu hiệu tài liệu nghiệp vụ
+đã bị lẫn chi tiết kỹ thuật vào.
 
 ---
 
