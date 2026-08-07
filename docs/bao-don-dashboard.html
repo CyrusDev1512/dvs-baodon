@@ -343,7 +343,7 @@
   <header>
     <div class="eyebrow">DVS · Nghiệp vụ báo đơn · Track A + Track B</div>
     <h1>Kế hoạch triển khai &amp; kiến trúc hệ thống</h1>
-    <div class="meta">Dựa trên <code>bao-don-flow.md</code> v1.0 · 07/08/2026 · Khung thời gian mục tiêu: <b>1–3 ngày làm việc</b> (~25 giờ)</div>
+    <div class="meta">Dựa trên <code>bao-don-flow.md</code> v1.1 · 07/08/2026 · Khung thời gian mục tiêu: <b>1–3 ngày làm việc</b> (~24 giờ)</div>
     <div class="banner">
       <span class="dot"></span>
       <p><strong>Đang bị chặn:</strong> team <b>chưa có quyền truy cập dashboard vận đơn</b>. Toàn bộ Track A (story 3–8) đứng yên cho tới khi có tài khoản. Đồng hồ 1–3 ngày bên dưới tính từ <b>thời điểm được cấp quyền</b> — việc gấp nhất hiện tại là xin quyền, không phải việc kỹ thuật nào khác.</p>
@@ -359,13 +359,13 @@
       </div>
       <div class="tile">
         <div class="label">Thời gian dự kiến</div>
-        <div class="value">3 <small>ngày · ~25 giờ</small></div>
+        <div class="value">3 <small>ngày · ~24 giờ</small></div>
         <div class="note">1 ngày nếu chỉ tính Track A</div>
       </div>
       <div class="tile">
-        <div class="label">Câu hỏi chưa xác nhận</div>
-        <div class="value">8</div>
-        <div class="note">6 câu trả lời được không cần truy cập</div>
+        <div class="label">Câu hỏi còn mở</div>
+        <div class="value">3 <small>/ 8</small></div>
+        <div class="note">5 câu đã chốt 07/08 — xem bảng dưới</div>
       </div>
       <div class="tile crit">
         <div class="label">Blocker gấp</div>
@@ -384,7 +384,7 @@
       <div class="day">
         <div class="day-head">
           <h3>Ngày 1 <span class="goal">Khảo sát &amp; quyết định</span></h3>
-          <span class="sum">~7,5 giờ</span>
+          <span class="sum">~6 giờ</span>
         </div>
         <div class="stories">
           <div class="story">
@@ -393,8 +393,8 @@
             <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st blocked">● Đang chặn</span></div>
           </div>
           <div class="story">
-            <div class="top"><span class="name">2 · Hỏi nội bộ 6 câu không cần truy cập</span><span class="hrs">3 h</span></div>
-            <p class="why">Nguồn ảnh báo đơn, Messenger hay Pancake, quy tắc tên nhóm, giờ chạy 4 lượt, quiet hours — kèm ngồi xem một lượt báo đơn thật.</p>
+            <div class="top"><span class="name">2 · Làm rõ 3 câu còn mở (4, 5, 6) + khoá tra ảnh của bot</span><span class="hrs">1,5 h</span></div>
+            <p class="why">Công thức tên nhóm Messenger, mã định danh trên trang danh sách, URL web vận đơn — ngồi cạnh nhân viên báo đơn, chụp màn hình là đủ.</p>
             <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st good">● Làm được ngay</span></div>
           </div>
           <div class="story">
@@ -456,8 +456,8 @@
             <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st good">● Sẵn sàng</span></div>
           </div>
           <div class="story">
-            <div class="top"><span class="name">11 · Notifier: ảnh báo đơn + gửi Sale</span><span class="hrs">2 h</span></div>
-            <p class="why">Tựa trên 2 câu chưa chốt: nguồn ảnh (câu 1) và kênh gửi — tự động hoá Messenger cá nhân vi phạm điều khoản Meta (câu 3).</p>
+            <div class="top"><span class="name">11 · Notifier: lấy ảnh từ bot Telegram + gửi Sale qua Messenger</span><span class="hrs">2 h</span></div>
+            <p class="why">Nguồn ảnh đã chốt: bot Telegram, tra theo mã đơn. Rủi ro còn lại: cách gửi Messenger an toàn — tự động hoá tài khoản cá nhân vi phạm điều khoản Meta.</p>
             <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st risk">● Rủi ro mở</span></div>
           </div>
           <div class="story">
@@ -482,7 +482,7 @@ flowchart LR
         direction TB
         DASH["Dashboard vận đơn<br/>bộ lọc «đơn cần báo»<br/>❓ myship 7-11 hay forwarder"]
         SHEET["Google Sheet<br/>Sale + link Messenger"]
-        ANH["Ảnh báo đơn<br/>❓ nguồn chưa xác định"]
+        ANH["Bot Telegram<br/>ảnh báo đơn theo mã đơn<br/>❓ khoá tra: STT / mã S / mã vận đơn"]
     end
 
     subgraph HT["Hệ thống báo đơn · chạy nền mỗi SCAN_INTERVAL"]
@@ -491,7 +491,7 @@ flowchart LR
         REC["Reconcile<br/>đơn mới / đơn cũ / đơn biến mất"]
         DB[("Database<br/>khoá: mã đơn")]
         Q["Hàng đợi gửi<br/>REMIND_TIMES · QUIET_HOURS · rate limit"]
-        NOTI["Notifier<br/>❓ Messenger hay Pancake"]
+        NOTI["Notifier — gửi qua Messenger<br/>⚠ cách gửi an toàn chưa chốt (ToS Meta)"]
         CFG["src/config.py<br/>một nguồn cấu hình chung"]
         ERR["Sổ ngoại lệ"]
     end
@@ -538,23 +538,23 @@ flowchart LR
   </section>
 
   <section>
-    <h2>8 câu hỏi chưa xác nhận</h2>
-    <p class="sub">Mỗi câu đang chặn một phần cụ thể của kế hoạch. Câu 1 và 3 nguy hiểm nhất vì chặn story 11 —
-    mắt xích cuối cùng chạm tới Sale.</p>
+    <h2>Câu hỏi khảo sát — 5 đã chốt · 3 còn mở</h2>
+    <p class="sub">Cập nhật 07/08/2026. Ba câu còn lại (4, 5, 6) được diễn giải lại bằng lời thường ngay trong bảng —
+    chỉ cần ngồi cạnh nhân viên báo đơn và chụp màn hình, không cần chờ quyền truy cập.</p>
     <div class="qa">
       <table>
         <thead>
-          <tr><th>#</th><th>Câu hỏi</th><th>Chặn cái gì</th><th>Cần truy cập?</th></tr>
+          <tr><th>#</th><th>Câu hỏi</th><th>Kết luận 07/08</th><th>Trạng thái</th></tr>
         </thead>
         <tbody>
-          <tr><td class="num">1</td><td><span class="q">Ảnh báo đơn lưu ở đâu?</span> Tra được theo mã đơn hay phải mò trong nhóm Messenger?</td><td>Story 11 — toàn bộ khâu lấy ảnh</td><td>Không</td></tr>
-          <tr><td class="num">2</td><td><span class="q">Telegram bot lưu ảnh có tồn tại không?</span> Spec cũ khẳng định có — mâu thuẫn với quy trình Messenger.</td><td>Kiến trúc notifier</td><td>Không</td></tr>
-          <tr><td class="num">3</td><td><span class="q">Gửi Sale qua Messenger hay Pancake?</span> Tự động hoá tài khoản Facebook cá nhân vi phạm điều khoản Meta — chế tài là khoá tài khoản.</td><td>Story 11 — kênh gửi</td><td>Không</td></tr>
-          <tr><td class="num">4</td><td><span class="q">Ký hiệu nhóm + STT ghép thành tên nhóm theo quy tắc nào?</span></td><td>Định vị nhóm/ảnh</td><td>Không</td></tr>
-          <tr><td class="num">5</td><td><span class="q">Trang danh sách có mã định danh ổn định cho từng dòng không?</span></td><td>Story 9 — khoá đối chiếu reconcile</td><td>Có</td></tr>
-          <tr><td class="num">6</td><td><span class="q">Web app là myship.7-11.com.tw hay hệ thống forwarder riêng?</span></td><td>Story 3–8 — toàn bộ Track A</td><td>Có</td></tr>
-          <tr><td class="num">7</td><td><span class="q">4 lượt/ngày chạy giờ nào, một lượt bao lâu, tỷ lệ ngoại lệ?</span></td><td>Ước lượng tải, lịch quét</td><td>Không</td></tr>
-          <tr><td class="num">8</td><td><span class="q">QUIET_HOURS 21:00–07:00 có hợp không?</span> Hàng 7-11 thường về sáng sớm.</td><td>Cấu hình mặc định</td><td>Không</td></tr>
+          <tr><td class="num">1</td><td><span class="q">Ảnh báo đơn lưu ở đâu?</span></td><td>Lưu tại <b>bot Telegram</b>, tra theo mã đơn. Câu mới phát sinh: khoá tra là STT, mã S hay mã vận đơn?</td><td><span class="chip st good">● Đã chốt</span></td></tr>
+          <tr><td class="num">2</td><td><span class="q">Telegram bot lưu ảnh có tồn tại không?</span></td><td><b>Có</b> — mâu thuẫn Telegram/Messenger trong tài liệu cũ đã gỡ: mỗi bên một vai.</td><td><span class="chip st good">● Đã chốt</span></td></tr>
+          <tr><td class="num">3</td><td><span class="q">Gửi Sale qua Messenger hay Pancake?</span></td><td><b>Messenger</b>. Còn phải chọn cách gửi an toàn: tự động hoá tài khoản cá nhân vi phạm điều khoản Meta, chế tài là khoá tài khoản.</td><td><span class="chip st risk">● Chốt · còn rủi ro</span></td></tr>
+          <tr><td class="num">4</td><td><span class="q">Tên nhóm chat Messenger của đơn được đặt theo công thức nào?</span> Ví dụ nhóm tên <code>S1234 - 15</code> hay <code>Nhóm 15 - STT 1234</code>? Trả lời dễ nhất: chụp tên 2–3 nhóm thật. Nếu ảnh tra được từ bot Telegram thì bước tìm nhóm có thể bỏ hẳn.</td><td>—</td><td><span class="chip st wait">● Còn mở</span></td></tr>
+          <tr><td class="num">5</td><td><span class="q">Trên trang danh sách (chưa bấm vào chi tiết), mỗi dòng đơn có hiện một mã không bao giờ đổi không?</span> Ví dụ mã vận đơn dạng <code>CC240721S121117</code>. Máy cần mã đó để nhớ "đơn này đã báo rồi", tránh báo trùng. Trả lời: chụp một trang danh sách.</td><td>—</td><td><span class="chip st wait">● Còn mở</span></td></tr>
+          <tr><td class="num">6</td><td><span class="q">Trang web nhân viên báo đơn mở hằng ngày có địa chỉ (URL) chính xác là gì?</span> Copy nguyên thanh địa chỉ trình duyệt khi đang đứng ở bộ lọc «đơn cần báo». Cần biết vì có thể có 2 trang: 7-11 và forwarder nội bộ.</td><td>—</td><td><span class="chip st wait">● Còn mở</span></td></tr>
+          <tr><td class="num">7</td><td><span class="q">Một ngày báo mấy lượt, vào lúc nào?</span></td><td><b>2 lượt/ngày — sáng và chiều</b> (không phải 4 như ghi nhận cũ). Mốc nhắc custom có thể thêm trong tương lai → giữ <code>REMIND_TIMES</code> dạng cấu hình.</td><td><span class="chip st good">● Đã chốt</span></td></tr>
+          <tr><td class="num">8</td><td><span class="q">QUIET_HOURS 21:00–07:00 có hợp không?</span></td><td><b>Đúng với hiện tại</b>; tương lai có thể làm đêm → giữ dạng cấu hình, không hard-code.</td><td><span class="chip st good">● Đã chốt</span></td></tr>
         </tbody>
       </table>
     </div>

@@ -1,6 +1,6 @@
 # Quy trình báo đơn — sơ đồ luồng
 
-> **Phiên bản:** v1.0 · cập nhật 07/08/2026
+> **Phiên bản:** v1.1 · cập nhật 07/08/2026 — chốt 5/8 câu hỏi mở (xem §4)
 > **Phạm vi:** nghiệp vụ Báo đơn. Xem `DVS-context-01-bao-don.md` cho bối cảnh nghiệp vụ,
 > `711-scraper-context.md` cho spec kỹ thuật của bộ đọc dữ liệu.
 > **Cảnh báo:** phần TO-BE dựa trên giả định về cấu trúc dashboard. Tại thời điểm viết,
@@ -26,7 +26,7 @@
 
 ```mermaid
 flowchart TD
-    Start(["TRIGGER: 4 lượt/ngày<br/>(?) giờ chạy cụ thể<br/>50-200 đơn mỗi lượt"]) --> A1
+    Start(["TRIGGER: 2 lượt/ngày - sáng và chiều<br/>50-200 đơn mỗi lượt"]) --> A1
 
     subgraph S0["GIAI ĐOẠN 0 - Lấy danh sách đơn cần báo"]
         direction TB
@@ -113,10 +113,10 @@ flowchart TD
     classDef action fill:#FFFFFF,stroke:#8A8A8A,stroke-width:1.5px,color:#222222
     classDef problem fill:#FCEAEA,stroke:#C0392B,stroke-width:2px,color:#7B1F1F
 
-    class C1,REVIEW,Start unknown
+    class C1,REVIEW unknown
     class B2,D3 data
     class A2,D1,NOTE,E3,E1 rule
-    class A1,B1,C3,E4,LOOP,LOG action
+    class A1,B1,C3,E4,LOOP,LOG,Start action
     class A9,B9,C9,D9,E9 problem
 ```
 
@@ -175,9 +175,9 @@ flowchart TD
     Q["HÀNG ĐỢI GỬI<br/>giãn nhịp NOTIFY_RATE_PER_MIN<br/>tôn trọng QUIET_HOURS"]
 
     Q --> M1
-    M1["Lấy ẢNH BÁO ĐƠN<br/>(?) nguồn ảnh chưa xác định"]
+    M1["Lấy ẢNH BÁO ĐƠN từ BOT TELEGRAM<br/>tra theo mã đơn<br/>(?) khoá tra là mã nào: STT / mã S / mã vận đơn"]
     M2{"Lấy được ảnh + link Sale?"}
-    M3["Gửi tin cho Sale<br/>(?) qua Messenger hay Pancake"]
+    M3["Gửi tin cho Sale qua MESSENGER<br/>(?) cách gửi an toàn - tự động hoá tài khoản<br/>cá nhân vi phạm ToS Meta"]
     M4["Ghi log: đơn, Sale, thời điểm, kết quả"]
     M9["Ngoại lệ gửi"]
     M1 --> M2
@@ -231,7 +231,11 @@ Cấp áp dụng: **chung toàn hệ thống**, không cấu hình riêng theo S
 
 ### ✅ Đã xác nhận
 
-- Kênh liên lạc là **Messenger**, không phải Telegram
+- Gửi tin cho Sale qua **Messenger**; **ảnh báo đơn lưu tại bot Telegram**, tra theo mã đơn
+  → mâu thuẫn Telegram/Messenger cũ đã gỡ: cả hai cùng tồn tại, mỗi bên một vai
+- Tần suất báo hiện tại: **2 lượt/ngày — sáng và chiều** (không phải 4); mốc nhắc custom
+  có thể thêm trong tương lai → giữ `REMIND_TIMES` dạng cấu hình
+- `QUIET_HOURS` 21:00–07:00 **đúng với hiện tại**; tương lai có thể làm đêm → giữ dạng cấu hình
 - Bộ lọc `đơn cần báo` tồn tại trên dashboard
 - Tín hiệu cần báo = hàng **đã tới cửa hàng, khách chưa lấy** (mốc 4, không phải mốc 5)
 - Đơn rời bộ lọc khi khách lấy hàng hoặc sau 7 ngày hoàn về
@@ -243,16 +247,22 @@ Cấp áp dụng: **chung toàn hệ thống**, không cấu hình riêng theo S
 
 ### 🟧 Chưa xác nhận
 
-| # | Câu hỏi | Chặn cái gì |
+Đã chốt ngày 07/08/2026: câu 1 (ảnh lưu tại bot Telegram), câu 2 (bot có thật), câu 3
+(kênh gửi là Messenger — cách gửi an toàn vẫn phải chọn, xem cảnh báo ToS ở sơ đồ TO-BE),
+câu 7 (2 lượt/ngày sáng + chiều, mốc custom thêm sau), câu 8 (giữ 21:00–07:00, để dạng
+cấu hình vì tương lai có thể làm đêm).
+
+Còn mở 3 câu — người trả lời ban đầu **chưa hiểu câu hỏi**, nên dưới đây diễn giải lại
+bằng lời thường:
+
+| # | Câu hỏi (diễn giải lại) | Chặn cái gì |
 |---|---|---|
-| 1 | **Ảnh báo đơn lưu ở đâu?** Có tra được theo mã đơn không, hay phải mò trong nhóm Messenger mỗi lần? | Toàn bộ Giai đoạn 3 |
-| 2 | Có tồn tại Telegram bot lưu ảnh theo mã đơn không? Spec `711-scraper-context.md` khẳng định có — mâu thuẫn với quy trình Messenger | Kiến trúc |
-| 3 | Gửi tin cho Sale qua Messenger hay **Pancake**? Tự động hoá tài khoản Facebook cá nhân vi phạm điều khoản Meta, chế tài là khoá tài khoản | Giai đoạn 4 |
-| 4 | Ký hiệu nhóm + STT ghép thành tên nhóm Messenger theo quy tắc nào? | Giai đoạn 2 |
-| 5 | Trang danh sách có mã định danh ổn định cho từng dòng không? Cần để đối chiếu tìm đơn mới | Thiết kế TO-BE |
-| 6 | Web app vận đơn là `myship.7-11.com.tw` hay một hệ thống forwarder riêng? | Track A |
-| 7 | 4 lượt/ngày hiện tại chạy vào giờ nào? Một lượt mất bao lâu? Tỷ lệ ngoại lệ bao nhiêu? | Ước lượng tải |
-| 8 | `QUIET_HOURS` mặc định 21:00–07:00 có hợp không? Hàng 7-11 thường về sáng sớm | Cấu hình |
+| 4 | Tên các nhóm chat Messenger của đơn hàng được **đặt theo công thức nào**? Ví dụ nhóm tên là `S1234 - 15` hay `Nhóm 15 - STT 1234`? Cách trả lời dễ nhất: chụp màn hình tên của 2–3 nhóm thật. *(Lưu ý: nếu ảnh đã tra được từ bot Telegram thì bước tìm nhóm Messenger có thể bỏ hẳn — khi đó câu này hết quan trọng.)* | Giai đoạn 2 |
+| 5 | Nhìn **trang danh sách** của bộ lọc (chưa bấm vào chi tiết): mỗi dòng đơn có hiển thị **một mã không bao giờ đổi** giữa các lần mở không — ví dụ mã vận đơn dạng `CC240721S121117`? Máy cần mã đó để nhớ "đơn này đã báo rồi", tránh báo trùng. Cách trả lời: chụp màn hình một trang danh sách. | Đối chiếu đơn mới/cũ |
+| 6 | Trang web mà nhân viên báo đơn mở hằng ngày để xem bộ lọc `đơn cần báo` có **địa chỉ (URL) chính xác là gì**? Copy nguyên thanh địa chỉ trình duyệt khi đang đứng ở màn hình bộ lọc. Cần biết vì có thể có 2 trang khác nhau: trang 7-11 và trang forwarder nội bộ. | Toàn bộ Track A |
+
+Bổ sung một câu mới phát sinh từ câu trả lời 1: **bot Telegram tra ảnh theo mã nào** —
+STT, mã `Sxxxx`, hay mã vận đơn `CCxxxx`? (hỏi người làm bot)
 
 ---
 
@@ -268,6 +278,6 @@ biết: ai đang giữ tài khoản, vì sao chưa cấp được, dự kiến b
 
 ### Làm được ngay, không cần truy cập
 
-- Trả lời câu hỏi 1, 2, 3, 4, 7, 8 ở bảng trên — chỉ cần hỏi người trong công ty
-- Chốt Messenger hay Pancake
+- Trả lời 3 câu còn mở (4, 5, 6) — chỉ cần hỏi / ngồi cạnh nhân viên báo đơn, chụp màn hình
+- Hỏi người làm bot Telegram: khoá tra ảnh là mã nào (STT / mã S / mã vận đơn)
 - Ghi lại quy trình chính xác hơn bằng cách ngồi xem nhân viên báo đơn làm một lượt thật
