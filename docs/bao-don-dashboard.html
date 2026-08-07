@@ -1,0 +1,578 @@
+<title>DVS Báo đơn — Kế hoạch & Kiến trúc</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-3: #898781;
+    --hairline: #e1e0d9;
+    --border: rgba(11, 11, 11, 0.10);
+    --track-a: #2a78d6;       /* Track A — bộ đọc dữ liệu */
+    --track-b: #eb6834;       /* Track B — backend */
+    --track-s: #1baf7a;       /* Khảo sát & quyết định */
+    --st-good: #0ca30c;
+    --st-good-bg: rgba(12, 163, 12, 0.10);
+    --st-warn: #8a5a00;
+    --st-warn-bg: rgba(250, 178, 25, 0.16);
+    --st-serious: #8c3c1c;
+    --st-serious-bg: rgba(236, 131, 90, 0.16);
+    --st-crit: #d03b3b;
+    --st-crit-bg: rgba(208, 59, 59, 0.10);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0d0d0d;
+      --surface: #1a1a19;
+      --ink: #ffffff;
+      --ink-2: #c3c2b7;
+      --ink-3: #898781;
+      --hairline: #2c2c2a;
+      --border: rgba(255, 255, 255, 0.10);
+      --track-a: #3987e5;
+      --track-b: #d95926;
+      --track-s: #199e70;
+      --st-good: #0ca30c;
+      --st-good-bg: rgba(12, 163, 12, 0.18);
+      --st-warn: #fab219;
+      --st-warn-bg: rgba(250, 178, 25, 0.14);
+      --st-serious: #ec835a;
+      --st-serious-bg: rgba(236, 131, 90, 0.14);
+      --st-crit: #e66767;
+      --st-crit-bg: rgba(208, 59, 59, 0.18);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --ink-3: #898781;
+    --hairline: #2c2c2a;
+    --border: rgba(255, 255, 255, 0.10);
+    --track-a: #3987e5;
+    --track-b: #d95926;
+    --track-s: #199e70;
+    --st-good: #0ca30c;
+    --st-good-bg: rgba(12, 163, 12, 0.18);
+    --st-warn: #fab219;
+    --st-warn-bg: rgba(250, 178, 25, 0.14);
+    --st-serious: #ec835a;
+    --st-serious-bg: rgba(236, 131, 90, 0.14);
+    --st-crit: #e66767;
+    --st-crit-bg: rgba(208, 59, 59, 0.18);
+  }
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --page: #f9f9f7;
+    --surface: #fcfcfb;
+    --ink: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-3: #898781;
+    --hairline: #e1e0d9;
+    --border: rgba(11, 11, 11, 0.10);
+    --track-a: #2a78d6;
+    --track-b: #eb6834;
+    --track-s: #1baf7a;
+    --st-good: #0ca30c;
+    --st-good-bg: rgba(12, 163, 12, 0.10);
+    --st-warn: #8a5a00;
+    --st-warn-bg: rgba(250, 178, 25, 0.16);
+    --st-serious: #8c3c1c;
+    --st-serious-bg: rgba(236, 131, 90, 0.16);
+    --st-crit: #d03b3b;
+    --st-crit-bg: rgba(208, 59, 59, 0.10);
+  }
+
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    line-height: 1.55;
+    margin: 0;
+  }
+  .wrap {
+    max-width: 1060px;
+    margin: 0 auto;
+    padding: 40px 24px 72px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  header h1 {
+    font-size: 30px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    margin: 6px 0 4px;
+    text-wrap: balance;
+  }
+  .meta {
+    font-size: 13.5px;
+    color: var(--ink-2);
+  }
+
+  .banner {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--st-crit-bg);
+    border: 1px solid var(--st-crit);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 20px;
+  }
+  .banner .dot {
+    flex: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--st-crit);
+    margin-top: 6px;
+  }
+  .banner strong { color: var(--st-crit); }
+  .banner p { margin: 0; font-size: 14px; color: var(--ink-2); }
+  .banner p b { color: var(--ink); font-weight: 600; }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+  }
+  .tile {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+  .tile .label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .tile .value {
+    font-size: 32px;
+    font-weight: 650;
+    line-height: 1.15;
+    margin-top: 4px;
+  }
+  .tile .value small {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink-2);
+  }
+  .tile .note { font-size: 13px; color: var(--ink-2); margin-top: 2px; }
+  .tile.crit .value { color: var(--st-crit); }
+
+  section > h2 {
+    font-size: 20px;
+    font-weight: 650;
+    margin: 0 0 4px;
+  }
+  section > .sub {
+    font-size: 14px;
+    color: var(--ink-2);
+    margin: 0 0 18px;
+    max-width: 72ch;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+    gap: 14px;
+  }
+  .day {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .day-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .day-head h3 { margin: 0; font-size: 15px; font-weight: 650; }
+  .day-head .goal { display: block; font-size: 12.5px; font-weight: 400; color: var(--ink-2); }
+  .day-head .sum {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .stories { display: flex; flex-direction: column; }
+  .story {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .story:last-child { border-bottom: none; }
+  .story .top {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .story .name { font-size: 14px; font-weight: 550; flex: 1; }
+  .story .hrs {
+    font-size: 13px;
+    color: var(--ink-2);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .story .why { font-size: 12.5px; color: var(--ink-2); margin: -3px 0 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+    color: var(--ink-2);
+    background: transparent;
+  }
+  .chip .sw { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+  .chip.st { border: none; }
+  .chip.st.good     { background: var(--st-good-bg);    color: var(--st-good); }
+  .chip.st.wait     { background: var(--st-warn-bg);    color: var(--st-warn); }
+  .chip.st.risk     { background: var(--st-serious-bg); color: var(--st-serious); }
+  .chip.st.blocked  { background: var(--st-crit-bg);    color: var(--st-crit); }
+
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    overflow-x: auto;
+  }
+  .diagram-card pre.mermaid {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    background: transparent;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--hairline);
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i {
+    width: 12px; height: 12px;
+    border-radius: 3px;
+    border: 1.5px solid;
+    flex: none;
+  }
+
+  .qa { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13.5px;
+  }
+  th {
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 12px 16px 8px;
+    border-bottom: 1px solid var(--hairline);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--hairline);
+    vertical-align: top;
+    color: var(--ink-2);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.num { color: var(--ink-3); font-variant-numeric: tabular-nums; }
+  td .q { color: var(--ink); font-weight: 550; }
+
+  .rules {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 12px;
+  }
+  .rule {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--track-s);
+    border-radius: 8px;
+    padding: 12px 15px;
+    font-size: 13.5px;
+    color: var(--ink-2);
+  }
+  .rule b { color: var(--ink); display: block; margin-bottom: 2px; }
+
+  footer { font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--hairline); padding-top: 16px; }
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">DVS · Nghiệp vụ báo đơn · Track A + Track B</div>
+    <h1>Kế hoạch triển khai &amp; kiến trúc hệ thống</h1>
+    <div class="meta">Dựa trên <code>bao-don-flow.md</code> v1.0 · 07/08/2026 · Khung thời gian mục tiêu: <b>1–3 ngày làm việc</b> (~25 giờ)</div>
+    <div class="banner">
+      <span class="dot"></span>
+      <p><strong>Đang bị chặn:</strong> team <b>chưa có quyền truy cập dashboard vận đơn</b>. Toàn bộ Track A (story 3–8) đứng yên cho tới khi có tài khoản. Đồng hồ 1–3 ngày bên dưới tính từ <b>thời điểm được cấp quyền</b> — việc gấp nhất hiện tại là xin quyền, không phải việc kỹ thuật nào khác.</p>
+    </div>
+  </header>
+
+  <section aria-label="Tổng quan">
+    <div class="tiles">
+      <div class="tile">
+        <div class="label">Story cần làm</div>
+        <div class="value">12</div>
+        <div class="note">3 nhóm: khảo sát · bộ đọc · backend</div>
+      </div>
+      <div class="tile">
+        <div class="label">Thời gian dự kiến</div>
+        <div class="value">3 <small>ngày · ~25 giờ</small></div>
+        <div class="note">1 ngày nếu chỉ tính Track A</div>
+      </div>
+      <div class="tile">
+        <div class="label">Câu hỏi chưa xác nhận</div>
+        <div class="value">8</div>
+        <div class="note">6 câu trả lời được không cần truy cập</div>
+      </div>
+      <div class="tile crit">
+        <div class="label">Blocker gấp</div>
+        <div class="value">1</div>
+        <div class="note">Quyền truy cập dashboard — chặn Track A</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Kế hoạch 3 ngày</h2>
+    <p class="sub">Ngày 1 dồn mọi câu hỏi mở về một mối để hai ngày sau chỉ còn code. Story có chip
+    <b>Chờ truy cập</b> phụ thuộc blocker; chip <b>Rủi ro mở</b> nghĩa là làm được nhưng đang tựa trên câu hỏi chưa chốt.</p>
+    <div class="board">
+
+      <div class="day">
+        <div class="day-head">
+          <h3>Ngày 1 <span class="goal">Khảo sát &amp; quyết định</span></h3>
+          <span class="sum">~7,5 giờ</span>
+        </div>
+        <div class="stories">
+          <div class="story">
+            <div class="top"><span class="name">1 · Xin quyền truy cập dashboard</span><span class="hrs">0,5 h</span></div>
+            <p class="why">Ai giữ tài khoản, vì sao chưa cấp, bao giờ có — chặn story 3–8.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st blocked">● Đang chặn</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">2 · Hỏi nội bộ 6 câu không cần truy cập</span><span class="hrs">3 h</span></div>
+            <p class="why">Nguồn ảnh báo đơn, Messenger hay Pancake, quy tắc tên nhóm, giờ chạy 4 lượt, quiet hours — kèm ngồi xem một lượt báo đơn thật.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st good">● Làm được ngay</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">3 · Khảo sát site thật: O1–O6</span><span class="hrs">3 h</span></div>
+            <p class="why">Login/CAPTCHA, vị trí cột, endpoint JSON (F12 → Network), export/thông báo sẵn có; lưu fixture đã xoá dữ liệu khách.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st wait">● Chờ truy cập</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">4 · Chốt transport, cập nhật NOTES.md</span><span class="hrs">1 h</span></div>
+            <p class="why">Browser automation hay replay endpoint nội bộ — quyết định tần suất quét khả thi.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st wait">● Chờ truy cập</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <h3>Ngày 2 <span class="goal">Track A — bộ đọc dữ liệu</span></h3>
+          <span class="sum">~9 giờ</span>
+        </div>
+        <div class="stories">
+          <div class="story">
+            <div class="top"><span class="name">5 · Đăng nhập + giữ phiên</span><span class="hrs">2 h</span></div>
+            <p class="why">Lưu <code>storage_state</code>, phát hiện bị đá ra, gặp CAPTCHA thì dừng báo người.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-a)"></span>Track A</span><span class="chip st wait">● Chờ truy cập</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">6 · Đọc trang danh sách bộ lọc «đơn cần báo»</span><span class="hrs">3 h</span></div>
+            <p class="why">Theo hết pagination, 50–200 đơn/lượt; thiếu trang nào là raise, không trả danh sách thiếu.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-a)"></span>Track A</span><span class="chip st wait">● Chờ truy cập</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">7 · Mở chi tiết đơn mới lấy STT + Sale + ký hiệu nhóm</span><span class="hrs">2 h</span></div>
+            <p class="why">Ba trường bắt buộc nằm ở trang chi tiết; chỉ mở cho đơn chưa từng thấy.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-a)"></span>Track A</span><span class="chip st wait">● Chờ truy cập</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">8 · Test offline từ fixture + CLI <code>--dry-run</code></span><span class="hrs">2 h</span></div>
+            <p class="why">Parse fixture ra <code>OrderToReport</code>; hỏng selector/endpoint là biết ngay không cần site thật.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-a)"></span>Track A</span><span class="chip st wait">● Chờ truy cập</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="day">
+        <div class="day-head">
+          <h3>Ngày 3 <span class="goal">Track B — backend &amp; tích hợp</span></h3>
+          <span class="sum">~9 giờ</span>
+        </div>
+        <div class="stories">
+          <div class="story">
+            <div class="top"><span class="name">9 · Database + reconcile</span><span class="hrs">3 h</span></div>
+            <p class="why">Đối chiếu theo mã đơn: đơn mới / đơn cũ còn trong lọc / đơn biến mất — áp 4 quy tắc gửi.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st good">● Sẵn sàng</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">10 · Hàng đợi gửi</span><span class="hrs">2 h</span></div>
+            <p class="why">Nhắc lại theo <code>REMIND_TIMES</code>, tôn trọng <code>QUIET_HOURS</code>, giãn nhịp <code>NOTIFY_RATE_PER_MIN</code>.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st good">● Sẵn sàng</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">11 · Notifier: ảnh báo đơn + gửi Sale</span><span class="hrs">2 h</span></div>
+            <p class="why">Tựa trên 2 câu chưa chốt: nguồn ảnh (câu 1) và kênh gửi — tự động hoá Messenger cá nhân vi phạm điều khoản Meta (câu 3).</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st risk">● Rủi ro mở</span></div>
+          </div>
+          <div class="story">
+            <div class="top"><span class="name">12 · Sổ ngoại lệ + log + chạy thật một lượt</span><span class="hrs">2 h</span></div>
+            <p class="why">End-to-end trên dữ liệu thật; mọi ngoại lệ ghi STT + lý do + thời điểm cho người xử lý.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st good">● Sẵn sàng</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <h2>Kiến trúc hệ thống (TO-BE)</h2>
+    <p class="sub">Khác biệt cốt lõi so với quy trình tay: tách <b>tần suất quét</b> khỏi <b>tần suất nhắn</b>,
+    và chỉ mở trang chi tiết cho đơn mới. Nút viền cam đứt là điểm chưa xác nhận.</p>
+    <div class="diagram-card">
+      <pre class="mermaid">
+flowchart LR
+    subgraph NGUON["Nguồn dữ liệu"]
+        direction TB
+        DASH["Dashboard vận đơn<br/>bộ lọc «đơn cần báo»<br/>❓ myship 7-11 hay forwarder"]
+        SHEET["Google Sheet<br/>Sale + link Messenger"]
+        ANH["Ảnh báo đơn<br/>❓ nguồn chưa xác định"]
+    end
+
+    subgraph HT["Hệ thống báo đơn · chạy nền mỗi SCAN_INTERVAL"]
+        direction TB
+        SCR["Bộ đọc dữ liệu<br/>src/scraper — hợp đồng OrderToReport<br/>❓ transport: chờ O5/O6"]
+        REC["Reconcile<br/>đơn mới / đơn cũ / đơn biến mất"]
+        DB[("Database<br/>khoá: mã đơn")]
+        Q["Hàng đợi gửi<br/>REMIND_TIMES · QUIET_HOURS · rate limit"]
+        NOTI["Notifier<br/>❓ Messenger hay Pancake"]
+        CFG["src/config.py<br/>một nguồn cấu hình chung"]
+        ERR["Sổ ngoại lệ"]
+    end
+
+    NGUOI["Người vận hành"]
+    SALE["Sale phụ trách"]
+    KHACH["Khách ra 7-11 lấy hàng"]
+
+    DASH -- "chỉ đọc, không ghi" --> SCR
+    SCR --> REC
+    REC <--> DB
+    REC -- "mới: báo ngay · cũ: tới mốc nhắc" --> Q
+    Q --> NOTI
+    SHEET --> NOTI
+    ANH --> NOTI
+    NOTI -- "1 đơn = 1 tin riêng" --> SALE
+    SALE -- "MBS / Pancake" --> KHACH
+    SCR -. "đọc thiếu / CAPTCHA" .-> ERR
+    NOTI -. "gửi lỗi" .-> ERR
+    ERR --> NGUOI
+    CFG -.-> SCR
+    CFG -.-> Q
+
+    classDef unknown fill:#FFF4E5,stroke:#E8A33D,stroke-width:2px,stroke-dasharray:5 3,color:#7A4E00
+    classDef data fill:#E8F1FC,stroke:#3B7DD8,stroke-width:2px,color:#123A6B
+    classDef rule fill:#EAF7EC,stroke:#3E9B54,stroke-width:2px,color:#14532D
+    classDef action fill:#FFFFFF,stroke:#8A8A8A,stroke-width:1.5px,color:#222222
+    classDef problem fill:#FCEAEA,stroke:#C0392B,stroke-width:2px,color:#7B1F1F
+
+    class DASH,ANH,SCR,NOTI unknown
+    class DB,SHEET,REC data
+    class Q,CFG rule
+    class NGUOI,SALE,KHACH action
+    class ERR problem
+      </pre>
+      <div class="legend">
+        <span><i style="border-color:#E8A33D;background:#FFF4E5"></i>Chưa xác nhận — cần người trả lời</span>
+        <span><i style="border-color:#3B7DD8;background:#E8F1FC"></i>Dữ liệu</span>
+        <span><i style="border-color:#3E9B54;background:#EAF7EC"></i>Quy tắc nghiệp vụ</span>
+        <span><i style="border-color:#8A8A8A;background:#FFFFFF"></i>Con người / hành động</span>
+        <span><i style="border-color:#C0392B;background:#FCEAEA"></i>Nhánh ngoại lệ</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>8 câu hỏi chưa xác nhận</h2>
+    <p class="sub">Mỗi câu đang chặn một phần cụ thể của kế hoạch. Câu 1 và 3 nguy hiểm nhất vì chặn story 11 —
+    mắt xích cuối cùng chạm tới Sale.</p>
+    <div class="qa">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Câu hỏi</th><th>Chặn cái gì</th><th>Cần truy cập?</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">1</td><td><span class="q">Ảnh báo đơn lưu ở đâu?</span> Tra được theo mã đơn hay phải mò trong nhóm Messenger?</td><td>Story 11 — toàn bộ khâu lấy ảnh</td><td>Không</td></tr>
+          <tr><td class="num">2</td><td><span class="q">Telegram bot lưu ảnh có tồn tại không?</span> Spec cũ khẳng định có — mâu thuẫn với quy trình Messenger.</td><td>Kiến trúc notifier</td><td>Không</td></tr>
+          <tr><td class="num">3</td><td><span class="q">Gửi Sale qua Messenger hay Pancake?</span> Tự động hoá tài khoản Facebook cá nhân vi phạm điều khoản Meta — chế tài là khoá tài khoản.</td><td>Story 11 — kênh gửi</td><td>Không</td></tr>
+          <tr><td class="num">4</td><td><span class="q">Ký hiệu nhóm + STT ghép thành tên nhóm theo quy tắc nào?</span></td><td>Định vị nhóm/ảnh</td><td>Không</td></tr>
+          <tr><td class="num">5</td><td><span class="q">Trang danh sách có mã định danh ổn định cho từng dòng không?</span></td><td>Story 9 — khoá đối chiếu reconcile</td><td>Có</td></tr>
+          <tr><td class="num">6</td><td><span class="q">Web app là myship.7-11.com.tw hay hệ thống forwarder riêng?</span></td><td>Story 3–8 — toàn bộ Track A</td><td>Có</td></tr>
+          <tr><td class="num">7</td><td><span class="q">4 lượt/ngày chạy giờ nào, một lượt bao lâu, tỷ lệ ngoại lệ?</span></td><td>Ước lượng tải, lịch quét</td><td>Không</td></tr>
+          <tr><td class="num">8</td><td><span class="q">QUIET_HOURS 21:00–07:00 có hợp không?</span> Hàng 7-11 thường về sáng sớm.</td><td>Cấu hình mặc định</td><td>Không</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Nguyên tắc bất di bất dịch</h2>
+    <div class="rules">
+      <div class="rule"><b>Chỉ đọc, không ghi</b>Không bấm bất kỳ nút tạo / sửa / xoá nào trên dashboard vận đơn.</div>
+      <div class="rule"><b>Không tự nhắn khách</b>Hệ thống chỉ nhắn nội bộ cho Sale; nói chuyện với khách vẫn là người thật.</div>
+      <div class="rule"><b>Thà không báo còn hơn báo sai</b>Đọc không hết danh sách → dừng và báo lỗi cho người, không gửi danh sách thiếu.</div>
+      <div class="rule"><b>Ngoại lệ phải có sổ</b>Mọi nhánh lỗi ghi STT + lý do + thời điểm; người xử lý phần còn lại.</div>
+    </div>
+  </section>
+
+  <footer>
+    Nguồn: <code>bao-don-flow.md</code> v1.0, <code>DVS-context-01-bao-don.md</code>, <code>711-scraper-context.md</code> ·
+    Ước lượng giờ là dự kiến cho một người làm chính, chưa gồm thời gian chờ cấp quyền truy cập.
+  </footer>
+
+</div>
