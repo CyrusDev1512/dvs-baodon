@@ -396,8 +396,8 @@
     <div class="tiles">
       <div class="tile">
         <div class="label">Story đã xong</div>
-        <div class="value">4 <small>/ 12</small></div>
-        <div class="note">Track B xong (story 9, 10 + phần mock của 11, 12)</div>
+        <div class="value">5 <small>/ 12</small></div>
+        <div class="note">Track B + phiên đăng nhập; công cụ khảo sát sẵn sàng</div>
       </div>
       <div class="tile">
         <div class="label">Còn lại</div>
@@ -441,9 +441,9 @@
             <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st good">● Làm được ngay</span></div>
           </div>
           <div class="story">
-            <div class="top"><span class="name">3 · Khảo sát site thật: O1–O6</span><span class="hrs">3 h</span></div>
-            <p class="why">Login/CAPTCHA, vị trí cột, endpoint JSON (F12 → Network), export/thông báo sẵn có; lưu fixture đã xoá dữ liệu khách. <b>Hướng dẫn 7 bước đã soạn sẵn trong <code>NOTES.md</code></b> — có tài khoản là làm theo được ngay.</p>
-            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st wait">● Chờ truy cập</span></div>
+            <div class="top"><span class="name">3 · Khảo sát site thật: O1–O6</span><span class="hrs">1 h</span></div>
+            <p class="why">Rút từ 3 giờ xuống ~1 giờ: <b>công cụ khảo sát đã viết xong</b>. <code>session --login</code> đăng nhập tay một lần rồi lưu phiên; <code>survey</code> tự ghi lại request nền và chỉ ra cái nào là danh sách đơn kèm tên các trường — trả lời O5, O2, O4 mà không phải đọc DevTools. Đã test bằng dashboard giả có endpoint JSON.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-s)"></span>Khảo sát</span><span class="chip st wait">◐ Công cụ sẵn, chờ tài khoản</span></div>
           </div>
           <div class="story">
             <div class="top"><span class="name">4 · Chốt transport, cập nhật NOTES.md</span><span class="hrs">1 h</span></div>
@@ -460,9 +460,9 @@
         </div>
         <div class="stories">
           <div class="story">
-            <div class="top"><span class="name">5 · Đăng nhập + giữ phiên</span><span class="hrs">2 h</span></div>
-            <p class="why">Lưu <code>storage_state</code>, phát hiện bị đá ra, gặp CAPTCHA thì dừng báo người.</p>
-            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-a)"></span>Track A</span><span class="chip st wait">● Chờ truy cập</span></div>
+            <div class="top"><span class="name">5 · Đăng nhập + giữ phiên</span><span class="hrs">✓</span></div>
+            <p class="why">Xong: lưu và nạp lại phiên, phát hiện bị đá về trang đăng nhập, kiểm tra phiên còn sống, chụp màn hình + lưu HTML khi đọc hỏng. Phần này không phụ thuộc selector nên làm được trước — và cần cho cả hai hướng transport.</p>
+            <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-a)"></span>Track A</span><span class="chip st done">✓ Hoàn thành</span></div>
           </div>
           <div class="story">
             <div class="top"><span class="name">6 · Đọc trang danh sách bộ lọc «đơn cần báo»</span><span class="hrs">3 h</span></div>
@@ -534,6 +534,10 @@
       <div class="run">
         <code>python -m src.report --stt 1502</code>
         <span>Lần theo một đơn: thấy lúc nào, báo mấy lần, cho ai, có vướng ngoại lệ gì.</span>
+      </div>
+      <div class="run">
+        <code>python -m src.scraper.survey --url …</code>
+        <span>Công cụ khảo sát: chỉ ra trang web đang xem lấy dữ liệu từ đâu. Dùng khi có tài khoản, nhưng thử trước với bất kỳ trang nào cũng được.</span>
       </div>
     </div>
   </section>
@@ -634,9 +638,9 @@ flowchart LR
     hoặc chụp màn hình; việc thứ tư là quyết định của cấp quản lý vì có rủi ro pháp lý.</p>
     <div class="next">
       <div class="todo">
-        <span class="who">Gấp nhất · chặn story 3–8</span>
+        <span class="who">Gấp nhất · chặn story 3, 6–8</span>
         <b>Xin tài khoản dashboard vận đơn</b>
-        <p>Cần biết ai đang giữ, vì sao chưa cấp được, bao giờ có. Có tài khoản là làm theo hướng dẫn 7 bước trong <code>NOTES.md</code>, khoảng 30 phút là đủ dữ liệu để viết bộ đọc.</p>
+        <p>Cần biết ai đang giữ, vì sao chưa cấp được, bao giờ có. Có tài khoản thì chạy 2 lệnh trong <code>NOTES.md</code> (đăng nhập, rồi tự bắt endpoint) — khoảng 30 phút là đủ dữ liệu để viết bộ đọc.</p>
       </div>
       <div class="todo soft">
         <span class="who">Hỏi nhân viên báo đơn · 30 phút</span>

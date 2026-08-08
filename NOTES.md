@@ -5,29 +5,51 @@
 
 ## Làm gì trong 30 phút đầu khi có tài khoản
 
-Làm đúng thứ tự dưới đây rồi điền các mục O1–O6; xong là code scraper được ngay.
+Đã có sẵn 2 công cụ để đỡ phải làm tay — chạy theo thứ tự này:
 
-1. **Đăng nhập bằng tay**, để ý có CAPTCHA/2FA không → ghi O1. Copy URL trang login.
-2. Mở **bộ lọc `đơn cần báo`**, copy nguyên thanh địa chỉ → ghi vào mục "Filter" bên dưới.
-   Đây cũng là câu trả lời cho câu 6 (myship hay forwarder riêng).
-3. **Chụp toàn màn hình trang danh sách** (còn nguyên tên cột). Đối chiếu: có cột STT /
-   Sale phụ trách / ký hiệu nhóm / mã S không → ghi O2, O4. Có mã dòng cố định
-   (`CCxxxx`) không → câu 5.
-4. Bấm vào **một đơn**, chụp trang chi tiết → xác nhận trường nào chỉ có ở đây (O2).
-5. Nhấn **F12 → tab Network → lọc Fetch/XHR → F5 tải lại trang danh sách**. Có request
-   trả JSON chứa các dòng đơn không?
-   - Có → copy URL + method + params, lưu một response mẫu (xoá tên/SĐT/địa chỉ khách
-     trước khi commit) vào `tests/fixtures/orders_sample.json` → ghi O5. **Đây là
-     đường nhanh và bền hơn nhiều so với đọc HTML.**
-   - Không → chuột phải trang → "Save as" HTML, xoá dữ liệu khách, lưu
-     `tests/fixtures/dashboard_sample.html`.
-6. Tìm nút **xuất file (匯出 / 下載 / Excel / CSV)** và kiểm tra hộp thư/LINE của tài
-   khoản seller xem có thông báo tự động khi hàng tới cửa hàng không → ghi O6. Nếu có,
+**Bước 1 — đăng nhập và lưu phiên** (làm một lần, các lần sau tự dùng lại):
+
+```bash
+python -m src.scraper.session --login
+```
+
+Điền `SEVEN_ELEVEN_URL` trong `.env` trước. Lệnh này mở cửa sổ trình duyệt thật để
+bạn đăng nhập bằng tay (kể cả CAPTCHA), rồi lưu phiên vào `.auth/`. Trong lúc làm,
+để ý có CAPTCHA/2FA không, CAPTCHA chỉ hiện lúc login hay mỗi lần tra cứu → **ghi O1**.
+Kiểm tra phiên còn sống: `python -m src.scraper.session --check`.
+
+**Bước 2 — tự bắt endpoint, trả lời O5** (thay cho việc ngồi đọc DevTools):
+
+```bash
+python -m src.scraper.survey
+```
+
+Mở bộ lọc `đơn cần báo`, **tải lại trang**, bấm sang trang 2 nếu có, rồi bấm Enter.
+Công cụ in ra bảng xếp hạng request nào giống "danh sách đơn" nhất, kèm **tên các
+trường** trong đó. Nhìn bảng này là trả lời được luôn:
+- Có endpoint JSON không, URL và tham số là gì → **O5**
+- Trong danh sách trường có `stt` / tên Sale / mã S không → **O2, O4**
+- Có mã định danh cố định cho mỗi dòng không (`CCxxxx`) → **câu 5**
+- Nếu công cụ báo "KHÔNG thấy request JSON nào" → bảng nằm trong HTML, phải đọc bằng
+  trình duyệt; ghi kết luận đó vào O5.
+
+Bảng in ra chỉ có tên trường, không có giá trị, nên chụp màn hình gửi cho nhau được.
+File đầy đủ nằm trong `debug/` và **chứa dữ liệu khách thật** — phải xoá sạch tên,
+SĐT, địa chỉ trước khi dùng làm fixture test.
+
+**Bước 3 — những thứ vẫn phải nhìn bằng mắt:**
+
+1. Copy nguyên thanh địa chỉ khi đang ở bộ lọc → mục "Filter" bên dưới (cũng là câu 6:
+   myship hay forwarder riêng).
+2. Chụp toàn màn hình trang danh sách còn nguyên tên cột; bấm vào một đơn, chụp trang
+   chi tiết → xác nhận trường nào chỉ có ở trang chi tiết (**O2**).
+3. Tìm nút **xuất file (匯出 / 下載 / Excel / CSV)**, và kiểm tra hộp thư/LINE của tài
+   khoản seller xem có thông báo tự động khi hàng tới cửa hàng không → **O6**. Nếu có,
    có thể khỏi cần quét định kỳ.
-7. Lướt xuống cuối danh sách xem **kiểu phân trang** (số trang / cuộn vô hạn / nút "xem
-   thêm") và đếm xem một lượt có bao nhiêu đơn, bao nhiêu trang.
+4. Lướt cuối danh sách xem **kiểu phân trang** (số trang / cuộn vô hạn / nút "xem
+   thêm"), đếm một lượt bao nhiêu đơn, bao nhiêu trang.
 
-Sau đó điền các mục dưới, rồi chạy `python -m src.scraper.seven_eleven --dry-run`.
+Sau đó điền các mục dưới, chốt transport, rồi mới code `seven_eleven.py`.
 
 ## O1 — Login
 - URL login: _(chưa xác nhận)_

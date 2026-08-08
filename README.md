@@ -86,11 +86,19 @@ lịch riêng cho ban đêm.
 ## Chạy Track A (khi có tài khoản)
 
 ```bash
-python -m src.scraper.seven_eleven --dry-run     # in danh sách đơn ra JSON
+python -m src.scraper.session --login       # đăng nhập tay 1 lần, lưu phiên
+python -m src.scraper.session --check       # phiên còn dùng được không
+python -m src.scraper.survey                # tự bắt endpoint JSON → trả lời O5
+python -m src.scraper.seven_eleven --dry-run  # (sau khi code xong) in đơn ra JSON
 ```
 
-Lần chạy đầu: đặt `HEADLESS=false`, login tay (nếu có CAPTCHA), session được lưu vào
-`.auth/711_state.json` để các lần sau chạy headless.
+`session --login` mở trình duyệt thật để đăng nhập bằng tay (kể cả CAPTCHA) rồi lưu
+`.auth/711_state.json`; các lần sau chạy headless bằng phiên đó.
+
+`survey` ghi lại mọi request nền trong lúc bạn duyệt dashboard, rồi chỉ ra request nào
+giống "danh sách đơn" nhất kèm tên các trường — thay cho việc đọc DevTools bằng mắt.
+Bảng in ra chỉ có tên trường (an toàn để chụp gửi); file đầy đủ trong `debug/` **chứa
+dữ liệu khách thật**, phải xoá sạch trước khi dùng làm fixture. Chi tiết: `NOTES.md`.
 
 ## Nguyên tắc bất di bất dịch
 
