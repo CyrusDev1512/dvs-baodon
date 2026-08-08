@@ -57,6 +57,31 @@ Khi có tài khoản, swap `MockScraper()` → `SevenElevenScraper()` trong `run
 Chưa có gì gửi thật: `DryRunNotifier`/`DryRunImageStore` chỉ in ra — kênh Messenger
 an toàn và khoá tra ảnh bot Telegram là 2 quyết định còn chờ.
 
+### Tra sổ ngoại lệ & lịch sử báo đơn
+
+```bash
+python -m src.report                # tổng quan + ngoại lệ + tin đã gửi gần nhất
+python -m src.report --exceptions   # chỉ sổ ngoại lệ
+python -m src.report --stt 1502     # lần theo một đơn: thấy lúc nào, báo mấy lần
+```
+
+Chỉ đọc (read-only), chạy được cả khi một lượt quét đang diễn ra.
+
+## Lên lịch chạy (khi Track A xong)
+
+Cố ý KHÔNG viết daemon: mỗi lượt là một tiến trình chạy rồi thoát, trạng thái nằm hết
+trong SQLite nên lượt bị lỡ tự bù ở lượt sau, và khoá DB chặn hai lượt chạy chồng.
+Lên lịch bằng Windows Task Scheduler:
+
+```powershell
+schtasks /create /tn "DVS-baodon" /sc minute /mo 15 ^
+  /tr "D:\DVS-baodon\.venv\Scripts\python.exe -m src.run_once" /st 07:00
+```
+
+Tiến trình trả exit code 1 khi lượt bị hủy (đọc dashboard lỗi / DB đang khoá) để Task
+Scheduler đánh dấu thất bại. Ngoài `QUIET_HOURS` hệ thống tự im lặng nên không cần
+lịch riêng cho ban đêm.
+
 ## Chạy Track A (khi có tài khoản)
 
 ```bash

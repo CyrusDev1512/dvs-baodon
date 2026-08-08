@@ -78,11 +78,14 @@ class DryRunNotifier(Notifier):
         self.sent: list[SendTask] = []
 
     def send(self, task: SendTask) -> str:
+        from src.message import build_message  # tránh vòng import
+
         self.sent.append(task)
         if self.echo:
+            body = build_message(task).replace("\n", " / ")
             print(
-                f"[DRY-RUN] GỬI {task.sale_name} ← đơn STT {task.stt}"
-                f" (mã {task.s_code or '-'}) [{len(task.images)} ảnh] ({task.kind})"
+                f"[DRY-RUN] GỬI {task.sale_name} ← {body}"
+                f" [{len(task.images)} ảnh] ({task.kind})"
             )
         return "dry-run"
 
