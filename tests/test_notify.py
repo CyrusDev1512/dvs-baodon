@@ -8,13 +8,24 @@ from tests.conftest import make_order
 def _task(stt="1502"):
     return SendTask(order_key=stt, stt=stt, s_code="S9663",
                     sale_name="Nguyễn Thu Hà", kind="first",
-                    images=(ImageRef(stt, "dryrun", f"dryrun://{stt}/1"),))
+                    images=(ImageRef(stt, "dryrun", f"dryrun://{stt}/1"),),
+                    body="S9663\nSTT 1502")
 
 
 def test_dryrun_notifier_records_tasks():
     n = DryRunNotifier(echo=False)
     assert n.send(_task()) == "dry-run"
     assert len(n.sent) == 1 and n.sent[0].stt == "1502"
+
+
+def test_dryrun_echo_prints_the_body_that_will_be_sent(capsys):
+    """Dòng in ra chính là nội dung Sale sẽ nhận — đường kiểm tra chính của người."""
+    DryRunNotifier(echo=True).send(_task())
+    out = capsys.readouterr().out
+    assert "Nguyễn Thu Hà" in out and "S9663" in out and "STT 1502" in out
+    assert "1 ảnh" in out
+
+
 
 
 def test_image_store_multiple_images_and_missing():

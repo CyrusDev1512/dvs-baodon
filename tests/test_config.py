@@ -5,7 +5,21 @@ from datetime import time
 
 import pytest
 
-from src.config import _parse_hhmm, _parse_range, _parse_times_csv
+from pathlib import Path
+
+from src.config import PROJECT_ROOT, _anchor, _parse_hhmm, _parse_range, _parse_times_csv
+
+
+def test_relative_paths_anchor_to_project_not_cwd():
+    """Task Scheduler chạy với cwd lạ — đường dẫn tương đối phải neo vào gốc dự án,
+    nếu không mỗi lượt sẽ ghi DB ở một chỗ khác nhau."""
+    assert _anchor(Path("data/baodon.db")) == PROJECT_ROOT / "data/baodon.db"
+    assert _anchor(Path("data/baodon.db")).is_absolute()
+
+
+def test_absolute_path_left_alone():
+    p = Path(PROJECT_ROOT / "elsewhere.db")
+    assert _anchor(p) == p
 
 
 def test_parse_hhmm():

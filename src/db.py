@@ -61,13 +61,27 @@ class StoreLockedError(Exception):
 
 
 class Store:
-    """CRUD trạng thái đơn. Mở là chiếm khoá ghi (BEGIN IMMEDIATE) cho cả lượt."""
+    """CRUD trạng thái đơn.
 
-    def __init__(self, db_path: Path, exception_text_log: Path | None = None):
-        db_path.parent.mkdir(parents=True, exist_ok=True)
-        self._conn = sqlite3.connect(db_path, isolation_level=None)
+    Mở ở chế độ ghi = chiếm khoá (BEGIN IMMEDIATE) cho cả lượt, chống hai lượt
+    chạy chồng. Mở `readonly=True` (dùng cho lệnh tra sổ) thì không chiếm khoá và
+    không tạo file mới — nhờ WAL nên đọc được ngay cả khi một lượt đang ghi.
+    """
+
+    def __init__(self, db_path: Path, exception_text_log: Path | None = None,
+                 readonly: bool = False):
+        self.readonly = readonly
+        if readonly:
+            uri = db_path.resolve().as_uri() + "?mode=ro"
+            self._conn = sqlite3.connect(uri, uri=True)
+        else:
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+            self._conn = sqlite3.connect(db_path, isolation_level=None)
         self._conn.row_factory = sqlite3.Row
         self._exc_text = exception_text_log
+        if readonly:
+            return
+        self._conn.execute("PRAGMA journal_mode = WAL")  # đọc không chặn ghi
         self._init_schema()
         try:
             self._conn.execute("BEGIN IMMEDIATE")
@@ -86,6 +100,9 @@ class Store:
 
     def rollback_and_close(self) -> None:
         self._conn.execute("ROLLBACK")
+        self._conn.close()
+
+    def close(self) -> None:
         self._conn.close()
 
     # --- orders ---
@@ -164,4 +181,39 @@ class Store:
     def notifications_for(self, key: str) -> list[sqlite3.Row]:
         return self._conn.execute(
             "SELECT * FROM notifications WHERE order_key = ? ORDER BY id", (key,)
+        ).fetchall()
+
+    # --- truy vấn cho lệnh tra sổ (src/report.py) ---
+    # Để SQL nằm hết ở đây: khi đổi khoá order_key (user_version 2) chỉ sửa một file.
+
+    def status_counts(self) -> dict[str, int]:
+        return dict(
+            self._conn.execute(
+                "SELECT status, COUNT(*) FROM orders GROUP BY status"
+            ).fetchall()
+        )
+
+    def notification_count(self) -> int:
+        return self._conn.execute("SELECT COUNT(*) FROM notifications").fetchone()[0]
+
+    def recent_exceptions(self, limit: int) -> list[sqlite3.Row]:
+        return self._conn.execute(
+            "SELECT * FROM exception_log ORDER BY id DESC LIMIT ?", (limit,)
+        ).fetchall()
+
+    def recent_notifications(self, limit: int) -> list[sqlite3.Row]:
+        return self._conn.execute(
+            "SELECT * FROM notifications ORDER BY id DESC LIMIT ?", (limit,)
+        ).fetchall()
+
+    def orders_by_stt(self, stt: str) -> list[sqlite3.Row]:
+        """Trả về TẤT CẢ đơn khớp STT — không dùng fetchone, vì STT chưa chắc
+        unique (cờ đỏ O3) và sau khi đổi khoá thì một STT có thể ra nhiều dòng."""
+        return self._conn.execute(
+            "SELECT * FROM orders WHERE stt = ? ORDER BY order_key", (stt,)
+        ).fetchall()
+
+    def exceptions_for_stt(self, stt: str) -> list[sqlite3.Row]:
+        return self._conn.execute(
+            "SELECT * FROM exception_log WHERE stt = ? ORDER BY id", (stt,)
         ).fetchall()

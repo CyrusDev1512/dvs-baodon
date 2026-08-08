@@ -36,6 +36,7 @@ class SendTask:
     sale_name: str
     kind: str                          # 'first' | 'remind' | 'reopen'
     images: tuple[ImageRef, ...]       # luôn >= 1 ảnh (ảnh bắt buộc)
+    body: str                          # nội dung đã soạn sẵn (src/message.py)
 
 
 class ImageStore(ABC):
@@ -51,8 +52,11 @@ class ImageStore(ABC):
 class Notifier(ABC):
     @abstractmethod
     def send(self, task: SendTask) -> str:
-        """Gửi tin cho Sale. Trả về mô tả kết quả để ghi audit; lỗi thì raise
-        NotifyError."""
+        """Gửi `task.body` kèm `task.images` cho Sale. Trả về mô tả kết quả để ghi
+        audit; lỗi thì raise NotifyError.
+
+        Bản thật KHÔNG tự soạn lại nội dung — dùng đúng `task.body` để những gì
+        dry-run in ra chính là những gì Sale nhận được."""
 
 
 class DryRunImageStore(ImageStore):
@@ -78,13 +82,10 @@ class DryRunNotifier(Notifier):
         self.sent: list[SendTask] = []
 
     def send(self, task: SendTask) -> str:
-        from src.message import build_message  # tránh vòng import
-
         self.sent.append(task)
         if self.echo:
-            body = build_message(task).replace("\n", " / ")
             print(
-                f"[DRY-RUN] GỬI {task.sale_name} ← {body}"
+                f"[DRY-RUN] GỬI {task.sale_name} ← {task.body.replace(chr(10), ' / ')}"
                 f" [{len(task.images)} ảnh] ({task.kind})"
             )
         return "dry-run"

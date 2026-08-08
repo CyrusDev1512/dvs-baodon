@@ -379,7 +379,7 @@
   <section>
     <h2>Kế hoạch 3 ngày</h2>
     <p class="sub">Track B (cột Ngày 3) đã được kéo lên làm trước trong lúc chờ tài khoản: chạy end-to-end
-    bằng <code>python -m src.run_once --mock</code>, 40 test xanh. Story <b>Chờ truy cập</b> vẫn phụ thuộc blocker;
+    bằng <code>python -m src.run_once --mock</code>, đã qua một lượt review độc lập. Story <b>Chờ truy cập</b> vẫn phụ thuộc blocker;
     <b>◐ Xong phần mock</b> = khung đã chạy, còn đầu nối thật.</p>
     <div class="board">
 
@@ -459,12 +459,12 @@
           </div>
           <div class="story">
             <div class="top"><span class="name">11 · Notifier: lấy ảnh từ bot Telegram + gửi Sale qua Messenger</span><span class="hrs">1 h</span></div>
-            <p class="why">Xong khung + dry-run + <b>mẫu nội dung tin</b> bám đúng dạng tin tay (mã S rồi STT, kèm album ảnh). Phần thật chờ 2 quyết định: khoá tra ảnh của bot và cách gửi Messenger an toàn (ToS Meta).</p>
+            <p class="why">Xong khung + dry-run + <b>mẫu nội dung tin</b> bám đúng dạng tin tay (mã S rồi STT). <b>Ảnh là bắt buộc: không có ảnh thì không gửi</b>, ghi sổ ngoại lệ — bản gửi thật phải giữ đúng quy tắc này. Còn chờ 2 quyết định: khoá tra ảnh của bot và cách gửi Messenger an toàn (ToS Meta).</p>
             <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st wait">◐ Xong phần mock</span></div>
           </div>
           <div class="story">
             <div class="top"><span class="name">12 · Sổ ngoại lệ + log + chạy thật một lượt</span><span class="hrs">1 h</span></div>
-            <p class="why">Sổ ngoại lệ (SQLite + file text), audit gửi tin và <b>lệnh tra sổ <code>python -m src.report</code></b> đã chạy; e2e dữ liệu giả xanh (46 test). Lịch chạy dùng Task Scheduler, câu lệnh có sẵn trong README. Còn lại: một lượt trên dữ liệu thật.</p>
+            <p class="why">Sổ ngoại lệ (SQLite + file text), audit gửi tin và <b>lệnh tra sổ <code>python -m src.report</code></b> đã chạy; bộ test e2e dữ liệu giả xanh. Lịch chạy dùng Task Scheduler, câu lệnh có sẵn trong README. Còn lại: một lượt trên dữ liệu thật.</p>
             <div class="chips"><span class="chip"><span class="sw" style="background:var(--track-b)"></span>Track B</span><span class="chip st wait">◐ Xong phần mock</span></div>
           </div>
         </div>

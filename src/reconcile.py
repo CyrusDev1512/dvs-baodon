@@ -18,6 +18,7 @@ from src import rules
 from src.clock import Clock
 from src.config import Settings
 from src.db import Store, parse_ts
+from src.message import build_message
 from src.notify import (
     ImageStore,
     Notifier,
@@ -145,7 +146,8 @@ def run_cycle(
             continue
         limiter.wait_turn()
         task = SendTask(order_key=key, stt=o.stt, s_code=o.s_code,
-                        sale_name=o.sale_name, kind=kind, images=images)
+                        sale_name=o.sale_name, kind=kind, images=images,
+                        body=build_message(kind, o.s_code, o.stt))
         try:
             result = notifier.send(task)
         except NotifyError as e:

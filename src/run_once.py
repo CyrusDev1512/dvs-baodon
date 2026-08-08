@@ -41,6 +41,13 @@ def _load_mock_file(path: Path) -> list[OrderToReport]:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Tiếng Việt phải in được cả khi Task Scheduler chuyển hướng stdout vào file;
+    # nếu không, một UnicodeEncodeError sẽ làm rollback CẢ lượt quét đã xử lý xong.
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, OSError):
+        pass
+
     parser = argparse.ArgumentParser(description="Chạy một lượt báo đơn (dry-run)")
     parser.add_argument("--mock", action="store_true",
                         help="Dùng MockScraper thay vì scraper thật (Track A đang chặn)")

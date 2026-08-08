@@ -48,7 +48,8 @@ class SevenElevenScraper(BaseScraper):
         #   4. Parse lỗi -> lưu HTML + screenshot vào debug/ rồi raise ParseError.
         #   5. Trả về đủ toàn bộ danh sách; thiếu là raise, không trả thiếu.
         raise NotImplementedError(
-            "Chưa khảo sát site thật (O1-O4 trong NOTES.md chưa có câu trả lời)."
+            "Chưa khảo sát site thật — điền O1-O6 và chốt transport trong NOTES.md"
+            " trước (O5: có endpoint JSON nội bộ không, quyết định tần suất quét)."
         )
 
     def _save_debug(self, html: str, screenshot: bytes) -> None:

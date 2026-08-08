@@ -17,6 +17,15 @@ except ImportError:  # dotenv là tiện ích, không bắt buộc khi env đã 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
+def _anchor(p: Path) -> Path:
+    """Neo đường dẫn tương đối vào gốc dự án, KHÔNG vào thư mục hiện hành.
+
+    Task Scheduler chạy tiến trình với cwd là C:\\Windows\\System32 — nếu để
+    tương đối thì mỗi lượt sẽ tạo DB ở một chỗ khác nhau và lệnh tra sổ báo
+    "chưa có DB" trong khi dữ liệu vẫn đang được ghi."""
+    return p if p.is_absolute() else PROJECT_ROOT / p
+
+
 def _parse_hhmm(value: str) -> time:
     """'09:00' -> time(9, 0). Sai định dạng thì ValueError ngay lúc khởi động."""
     parts = value.strip().split(":")
@@ -63,14 +72,14 @@ def get_settings() -> Settings:
         seven_eleven_url=os.environ.get("SEVEN_ELEVEN_URL", ""),
         seven_eleven_user=os.environ.get("SEVEN_ELEVEN_USER", ""),
         seven_eleven_pass=os.environ.get("SEVEN_ELEVEN_PASS", ""),
-        seven_eleven_storage_state=Path(
+        seven_eleven_storage_state=_anchor(Path(
             os.environ.get("SEVEN_ELEVEN_STORAGE_STATE", ".auth/711_state.json")
-        ),
+        )),
         headless=os.environ.get("HEADLESS", "true").strip().lower() != "false",
         scan_interval_minutes=int(os.environ.get("SCAN_INTERVAL_MINUTES", "15")),
         remind_times=_parse_times_csv(os.environ.get("REMIND_TIMES", "09:00,14:00")),
         remind_max_days=int(os.environ.get("REMIND_MAX_DAYS", "7")),
         quiet_hours=_parse_range(os.environ.get("QUIET_HOURS", "21:00-07:00")),
         notify_rate_per_min=int(os.environ.get("NOTIFY_RATE_PER_MIN", "10")),
-        db_path=Path(os.environ.get("BAODON_DB_PATH", "data/baodon.db")),
+        db_path=_anchor(Path(os.environ.get("BAODON_DB_PATH", "data/baodon.db"))),
     )

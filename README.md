@@ -9,7 +9,8 @@ lấy) và nhắc Sale phụ trách. Gồm 2 track trong cùng repo:
 
 1. `docs/DVS-context-01-bao-don.md` — nghiệp vụ Báo đơn (nguồn sự thật, cái gì & tại sao)
 2. `docs/711-scraper-context.md` — spec kỹ thuật Track A, hợp đồng `OrderToReport`
-3. `NOTES.md` — kết quả khảo sát site thật (O1–O4). **Chưa điền xong thì chưa code scraper.**
+3. `NOTES.md` — kết quả khảo sát site thật (O1–O6, gồm cả việc chốt transport).
+   **Chưa điền xong thì chưa code scraper.**
 
 ## Cấu trúc
 
