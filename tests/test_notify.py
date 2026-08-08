@@ -9,7 +9,8 @@ def _task(stt="1502"):
     return SendTask(order_key=stt, stt=stt, s_code="S9663",
                     sale_name="Nguyễn Thu Hà", kind="first",
                     images=(ImageRef(stt, "dryrun", f"dryrun://{stt}/1"),),
-                    body="S9663\nSTT 1502")
+                    body="S9663\nSTT 1502",
+                    sale_link="https://m.me/thuha", sale_channel="messenger")
 
 
 def test_dryrun_notifier_records_tasks():
@@ -24,6 +25,7 @@ def test_dryrun_echo_prints_the_body_that_will_be_sent(capsys):
     out = capsys.readouterr().out
     assert "Nguyễn Thu Hà" in out and "S9663" in out and "STT 1502" in out
     assert "1 ảnh" in out
+    assert "https://m.me/thuha" in out  # thấy rõ tin sẽ đi đâu, không chỉ tên ai
 
 
 

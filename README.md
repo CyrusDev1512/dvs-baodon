@@ -21,6 +21,9 @@ src/
   rules.py                # quy tắc thuần: order_key, quiet hours, mốc nhắc, quá hạn
   db.py                   # SQLite: trạng thái đơn + audit gửi + sổ ngoại lệ
   notify.py               # Notifier/ImageStore ABC + bản DryRun + RateLimiter
+  message.py              # soạn nội dung tin gửi Sale
+  sale_directory.py       # tra tên Sale → link Messenger (danh bạ CSV)
+  report.py               # CLI tra sổ ngoại lệ & lịch sử báo đơn
   reconcile.py            # run_cycle() — 4 quy tắc gửi, trái tim Track B
   run_once.py             # CLI: chạy 1 lượt rồi thoát (lên lịch bằng Task Scheduler)
   scraper/
@@ -48,6 +51,7 @@ cp .env.example .env                             # rồi điền credential
 ```bash
 python -m src.run_once --mock                          # 1 lượt trọn vẹn, dry-run
 python -m src.run_once --mock --now "2026-08-07 09:05" # demo mốc nhắc 09:00
+python -m src.run_once --mock --sales sales.example.csv # kèm danh bạ Sale
 pytest                                                 # toàn bộ test
 ```
 
@@ -57,6 +61,19 @@ Khi có tài khoản, swap `MockScraper()` → `SevenElevenScraper()` trong `run
 
 Chưa có gì gửi thật: `DryRunNotifier`/`DryRunImageStore` chỉ in ra — kênh Messenger
 an toàn và khoá tra ảnh bot Telegram là 2 quyết định còn chờ.
+
+### Danh bạ Sale (gửi cho ai)
+
+Dashboard chỉ cho biết *tên* Sale; gửi vào đâu thì tra trong danh bạ — xuất Google
+Sheet ra CSV với các cột `sale_name`, `messenger_link`, tuỳ chọn `aliases` (các cách
+viết khác, phân cách `;`) và `note`. Xem mẫu `sales.example.csv`; trỏ đường dẫn thật
+qua `SALE_DIRECTORY_PATH` trong `.env` (file thật chứa link cá nhân nên không commit).
+
+Khớp tên chịu được lệch hoa/thường, thừa khoảng trắng, và **thiếu dấu tiếng Việt** —
+nhưng chỉ khi ra đúng một người. Nếu Sale chưa có trong danh bạ, hoặc tên khớp với
+nhiều người (kể cả do bỏ dấu mà «Hà» lẫn với «Hạ»), hệ thống **không đoán**: bỏ qua
+đơn đó và ghi sổ ngoại lệ. Đơn vẫn giữ trạng thái chưa báo nên sẽ tự gửi ở lượt sau
+khi danh bạ được bổ sung.
 
 ### Tra sổ ngoại lệ & lịch sử báo đơn
 

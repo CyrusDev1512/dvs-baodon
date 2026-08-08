@@ -21,6 +21,7 @@ from src.config import get_settings
 from src.db import Store, StoreLockedError
 from src.notify import DryRunImageStore, DryRunNotifier
 from src.reconcile import run_cycle
+from src.sale_directory import build_directory
 from src.scraper.interface import OrderToReport, norm_s_code, norm_sale_name, norm_stt
 from src.scraper.mock import MockScraper
 
@@ -57,6 +58,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--now", help='Giả lập thời điểm chạy, "YYYY-MM-DD HH:MM"')
     parser.add_argument("--real-pace", action="store_true",
                         help="Giãn nhịp gửi thật theo NOTIFY_RATE_PER_MIN")
+    parser.add_argument("--sales", type=Path,
+                        help="CSV danh bạ Sale (mặc định theo SALE_DIRECTORY_PATH)")
     args = parser.parse_args(argv)
 
     settings = get_settings()
@@ -82,8 +85,10 @@ def main(argv: list[str] | None = None) -> int:
     notifier = DryRunNotifier()
     image_store = DryRunImageStore()
     try:
+        directory = build_directory(args.sales or settings.sale_directory_path)
         s = run_cycle(scraper, store, notifier, image_store, clock, settings,
-                      sleep_fn=_time.sleep if args.real_pace else None)
+                      sleep_fn=_time.sleep if args.real_pace else None,
+                      sale_directory=directory)
         store.commit_and_close()
     except Exception:
         store.rollback_and_close()
@@ -98,9 +103,10 @@ def main(argv: list[str] | None = None) -> int:
           f" | nhắc lại: {s.reminded} | chưa tới mốc: {s.not_due}"
           f" | đóng: {s.closed} | quá hạn: {s.expired}")
     print(f"Hoãn vì QUIET_HOURS: {s.deferred_quiet}"
-          f" | thiếu ảnh: {s.skipped_no_image} | lỗi gửi: {s.send_errors}"
-          f" | STT trùng: {s.duplicates}")
-    if s.skipped_no_image or s.send_errors or s.duplicates:
+          f" | thiếu ảnh: {s.skipped_no_image}"
+          f" | không tra được Sale: {s.skipped_no_sale}"
+          f" | lỗi gửi: {s.send_errors} | STT trùng: {s.duplicates}")
+    if s.skipped_no_image or s.skipped_no_sale or s.send_errors or s.duplicates:
         print("→ Có ngoại lệ mới, xem logs/exception_log.txt")
     return 0
 

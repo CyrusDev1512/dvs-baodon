@@ -64,6 +64,7 @@ class Settings:
     quiet_hours: tuple[time, time]
     notify_rate_per_min: int
     db_path: Path
+    sale_directory_path: Path | None  # None = chưa có danh bạ, chỉ chạy thử được
 
 
 @lru_cache(maxsize=1)
@@ -82,4 +83,8 @@ def get_settings() -> Settings:
         quiet_hours=_parse_range(os.environ.get("QUIET_HOURS", "21:00-07:00")),
         notify_rate_per_min=int(os.environ.get("NOTIFY_RATE_PER_MIN", "10")),
         db_path=_anchor(Path(os.environ.get("BAODON_DB_PATH", "data/baodon.db"))),
+        sale_directory_path=(
+            _anchor(Path(sd)) if (sd := os.environ.get("SALE_DIRECTORY_PATH", "").strip())
+            else None
+        ),
     )

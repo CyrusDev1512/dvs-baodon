@@ -43,6 +43,7 @@ def make_settings(**overrides) -> Settings:
         quiet_hours=(_dt.time(21, 0), _dt.time(7, 0)),
         notify_rate_per_min=10,
         db_path=__import__("pathlib").Path("data/test.db"),
+        sale_directory_path=None,
     )
     base.update(overrides)
     return Settings(**base)

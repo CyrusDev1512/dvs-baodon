@@ -37,6 +37,8 @@ class SendTask:
     kind: str                          # 'first' | 'remind' | 'reopen'
     images: tuple[ImageRef, ...]       # luôn >= 1 ảnh (ảnh bắt buộc)
     body: str                          # nội dung đã soạn sẵn (src/message.py)
+    sale_link: str                     # nơi gửi, tra từ danh bạ Sale
+    sale_channel: str                  # 'messenger' | 'dryrun'
 
 
 class ImageStore(ABC):
@@ -85,7 +87,8 @@ class DryRunNotifier(Notifier):
         self.sent.append(task)
         if self.echo:
             print(
-                f"[DRY-RUN] GỬI {task.sale_name} ← {task.body.replace(chr(10), ' / ')}"
+                f"[DRY-RUN] GỬI {task.sale_name} <{task.sale_link}>"
+                f" ← {task.body.replace(chr(10), ' / ')}"
                 f" [{len(task.images)} ảnh] ({task.kind})"
             )
         return "dry-run"

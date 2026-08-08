@@ -227,6 +227,10 @@ data/
 logs/
 # Ảnh mẫu chứa dữ liệu khách thật (SĐT/địa chỉ) — không commit, chỉ tham khảo local
 baodon_exampleimage.png
+# Danh bạ Sale thật (chứa link Messenger cá nhân) — chỉ commit sales.example.csv
+sales.csv
+sales*.csv
+!sales.example.csv
 # OS / editor
 .DS_Store
 Thumbs.db

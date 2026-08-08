@@ -26,6 +26,7 @@ from src.notify import (
     RateLimiter,
     SendTask,
 )
+from src.sale_directory import OpenSaleDirectory, SaleDirectory, SaleLookupError
 from src.scraper.interface import BaseScraper, OrderToReport, ScraperError
 
 
@@ -43,6 +44,7 @@ class CycleSummary:
     expired: int = 0
     deferred_quiet: int = 0
     skipped_no_image: int = 0
+    skipped_no_sale: int = 0
     send_errors: int = 0
     duplicates: int = 0
     sent_lines: list[str] = field(default_factory=list)
@@ -56,6 +58,7 @@ def run_cycle(
     clock: Clock,
     settings: Settings,
     sleep_fn=None,
+    sale_directory: SaleDirectory | None = None,
 ) -> CycleSummary:
     now = clock.now()
     summary = CycleSummary(at=now)
@@ -134,10 +137,18 @@ def run_cycle(
         summary.deferred_quiet = len(queue)
         return summary
 
+    directory = sale_directory or OpenSaleDirectory()
     limiter = RateLimiter(settings.notify_rate_per_min,
                           sleep_fn if sleep_fn is not None else (lambda s: None))
     for o, kind in queue:
         key = rules.order_key(o)
+        # Không biết chắc gửi cho ai thì KHÔNG gửi — thà không báo còn hơn báo nhầm.
+        try:
+            contact = directory.lookup(o.sale_name)
+        except SaleLookupError as e:
+            summary.skipped_no_sale += 1
+            store.log_exception(now, o.stt, "không tra được Sale trong danh bạ", str(e))
+            continue
         images = image_store.get_images(o)
         if not images:  # ảnh bắt buộc (chốt 07/08/2026) — thiếu là không gửi
             summary.skipped_no_image += 1
@@ -147,7 +158,8 @@ def run_cycle(
         limiter.wait_turn()
         task = SendTask(order_key=key, stt=o.stt, s_code=o.s_code,
                         sale_name=o.sale_name, kind=kind, images=images,
-                        body=build_message(kind, o.s_code, o.stt))
+                        body=build_message(kind, o.s_code, o.stt),
+                        sale_link=contact.link, sale_channel=contact.channel)
         try:
             result = notifier.send(task)
         except NotifyError as e:

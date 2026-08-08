@@ -5,12 +5,13 @@ from src.db import Store
 from src.notify import DryRunImageStore, DryRunNotifier, FailingNotifier
 from src.reconcile import run_cycle
 from src.scraper.interface import ParseError
+from src.sale_directory import CsvSaleDirectory
 from src.scraper.mock import MockScraper
 from tests.conftest import make_order
 
 
 def cycle(store, clock, settings, orders=None, error=None,
-          notifier=None, image_store=None):
+          notifier=None, image_store=None, sale_directory=None):
     return run_cycle(
         MockScraper(orders=orders, error=error) if orders is not None or error else MockScraper(orders=[]),
         store,
@@ -18,6 +19,7 @@ def cycle(store, clock, settings, orders=None, error=None,
         image_store or DryRunImageStore(),
         clock,
         settings,
+        sale_directory=sale_directory,
     )
 
 
@@ -116,6 +118,35 @@ def test_missing_image_skips_send(store, clock, settings):
               notifier=n, image_store=DryRunImageStore(missing={"1502"}))
     assert s.skipped_no_image == 1 and n.sent == []
     assert store.get_all()["1502"]["first_notified_at"] is None        # vẫn nợ
+    assert store.exception_count() == 1
+
+
+def test_unknown_sale_is_never_guessed(store, clock, settings, tmp_path):
+    """Không tra được Sale trong danh bạ thì tuyệt đối không gửi cho ai."""
+    csv = tmp_path / "s.csv"
+    csv.write_text("sale_name,messenger_link\nTrần Minh,https://m.me/x\n",
+                   encoding="utf-8")
+    n = DryRunNotifier(echo=False)
+    orders = [make_order(stt="1502", sale="Nguyễn Thu Hà"),   # chưa có trong danh bạ
+              make_order(stt="1503", sale="Trần Minh")]
+    s = cycle(store, clock, settings, orders=orders, notifier=n,
+              sale_directory=CsvSaleDirectory(csv))
+    assert s.skipped_no_sale == 1
+    assert [t.stt for t in n.sent] == ["1503"]                  # đơn kia vẫn gửi
+    assert n.sent[0].sale_link == "https://m.me/x"              # gửi đúng nơi
+    assert store.get_all()["1502"]["first_notified_at"] is None  # còn nợ, sẽ thử lại
+    assert store.exception_count() == 1
+
+
+def test_ambiguous_sale_name_blocks_send(store, clock, settings, tmp_path):
+    """Hai Sale trùng tên: thà không báo còn hơn báo nhầm người."""
+    csv = tmp_path / "s.csv"
+    csv.write_text("sale_name,messenger_link\nTrần Minh,https://m.me/a\n"
+                   "Trần Minh,https://m.me/b\n", encoding="utf-8")
+    n = DryRunNotifier(echo=False)
+    s = cycle(store, clock, settings, orders=[make_order(sale="Trần Minh")],
+              notifier=n, sale_directory=CsvSaleDirectory(csv))
+    assert s.skipped_no_sale == 1 and n.sent == []
     assert store.exception_count() == 1
 
 
