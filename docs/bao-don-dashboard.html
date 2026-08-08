@@ -336,6 +336,47 @@
   }
   .rule b { color: var(--ink); display: block; margin-bottom: 2px; }
 
+  .runs { display: flex; flex-direction: column; gap: 10px; }
+  .run {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 15px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+  }
+  .run code {
+    font-size: 13px;
+    color: var(--track-b);
+    background: transparent;
+    white-space: nowrap;
+  }
+  .run span { font-size: 13.5px; color: var(--ink-2); flex: 1 1 260px; }
+
+  .next { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
+  .todo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--st-crit);
+    border-radius: 8px;
+    padding: 13px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .todo.soft { border-left-color: var(--track-s); }
+  .todo b { font-size: 14px; }
+  .todo p { margin: 0; font-size: 13px; color: var(--ink-2); }
+  .todo .who {
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
   footer { font-size: 12.5px; color: var(--ink-3); border-top: 1px solid var(--hairline); padding-top: 16px; }
 </style>
 
@@ -359,9 +400,9 @@
         <div class="note">Track B xong (story 9, 10 + phần mock của 11, 12)</div>
       </div>
       <div class="tile">
-        <div class="label">Thời gian dự kiến</div>
-        <div class="value">3 <small>ngày · ~24 giờ</small></div>
-        <div class="note">1 ngày nếu chỉ tính Track A</div>
+        <div class="label">Còn lại</div>
+        <div class="value">~2 <small>ngày · 17 giờ</small></div>
+        <div class="note">Tính từ lúc được cấp quyền truy cập</div>
       </div>
       <div class="tile">
         <div class="label">Câu hỏi còn mở</div>
@@ -474,6 +515,30 @@
   </section>
 
   <section>
+    <h2>Chạy thử được ngay hôm nay</h2>
+    <p class="sub">Không cần tài khoản dashboard, không gửi tin ra ngoài — dữ liệu giả và mọi tin chỉ in ra màn hình.
+    Đây là cách kiểm chứng các quy tắc nghiệp vụ có đúng ý không, trước khi nối vào hệ thống thật.</p>
+    <div class="runs">
+      <div class="run">
+        <code>python -m src.run_once --mock</code>
+        <span>Một lượt trọn vẹn: 12 đơn giả, in ra tin sẽ gửi cho từng Sale.</span>
+      </div>
+      <div class="run">
+        <code>… --now "2026-08-07 09:05"</code>
+        <span>Giả lập giờ chạy để xem mốc nhắc 09:00 hoạt động. Chạy lại lần nữa → báo «chưa tới mốc», tức là không nhắn trùng.</span>
+      </div>
+      <div class="run">
+        <code>… --now "2026-08-07 21:30"</code>
+        <span>Trong khung giờ im lặng → không nhắn ai, để dành tới sáng.</span>
+      </div>
+      <div class="run">
+        <code>python -m src.report --stt 1502</code>
+        <span>Lần theo một đơn: thấy lúc nào, báo mấy lần, cho ai, có vướng ngoại lệ gì.</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
     <h2>Kiến trúc hệ thống (TO-BE)</h2>
     <p class="sub">Khác biệt cốt lõi so với quy trình tay: tách <b>tần suất quét</b> khỏi <b>tần suất nhắn</b>,
     và chỉ mở trang chi tiết cho đơn mới. Nút viền cam đứt là điểm chưa xác nhận. Khối «Hệ thống báo đơn»
@@ -564,6 +629,34 @@ flowchart LR
   </section>
 
   <section>
+    <h2>Việc tiếp theo — cần người quyết, không code được</h2>
+    <p class="sub">Bốn việc dưới đây đang chặn phần còn lại. Ba việc đầu chỉ cần hỏi người trong công ty
+    hoặc chụp màn hình; việc thứ tư là quyết định của cấp quản lý vì có rủi ro pháp lý.</p>
+    <div class="next">
+      <div class="todo">
+        <span class="who">Gấp nhất · chặn story 3–8</span>
+        <b>Xin tài khoản dashboard vận đơn</b>
+        <p>Cần biết ai đang giữ, vì sao chưa cấp được, bao giờ có. Có tài khoản là làm theo hướng dẫn 7 bước trong <code>NOTES.md</code>, khoảng 30 phút là đủ dữ liệu để viết bộ đọc.</p>
+      </div>
+      <div class="todo soft">
+        <span class="who">Hỏi nhân viên báo đơn · 30 phút</span>
+        <b>Trả lời 3 câu còn mở</b>
+        <p>URL trang đang dùng hằng ngày; trang danh sách có mã cố định cho mỗi dòng không; nhóm chat Messenger đặt tên theo công thức nào. Chụp màn hình là trả lời được.</p>
+      </div>
+      <div class="todo soft">
+        <span class="who">Hỏi người làm bot · 5 phút</span>
+        <b>Bot Telegram tra ảnh theo mã nào?</b>
+        <p>STT, mã <code>Sxxxx</code>, hay mã vận đơn <code>CCxxxx</code>? Biết mã này là nối được khâu lấy ảnh — khâu duy nhất còn thiếu để tin gửi Sale đầy đủ.</p>
+      </div>
+      <div class="todo">
+        <span class="who">Quản lý quyết · có rủi ro</span>
+        <b>Chốt cách gửi Messenger an toàn</b>
+        <p>Để máy tự nhắn bằng tài khoản Facebook cá nhân là vi phạm điều khoản Meta, chế tài là khoá tài khoản. Cần chọn hướng khác: gửi qua Pancake nếu công ty có, hoặc hệ thống soạn sẵn tin để người bấm gửi.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
     <h2>Nguyên tắc bất di bất dịch</h2>
     <div class="rules">
       <div class="rule"><b>Chỉ đọc, không ghi</b>Không bấm bất kỳ nút tạo / sửa / xoá nào trên dashboard vận đơn.</div>
@@ -574,8 +667,9 @@ flowchart LR
   </section>
 
   <footer>
-    Nguồn: <code>bao-don-flow.md</code> v1.0, <code>DVS-context-01-bao-don.md</code>, <code>711-scraper-context.md</code> ·
-    Ước lượng giờ là dự kiến cho một người làm chính, chưa gồm thời gian chờ cấp quyền truy cập.
+    Nguồn: <code>bao-don-flow.md</code> v1.1, <code>DVS-context-01-bao-don.md</code>, <code>711-scraper-context.md</code> ·
+    Ước lượng giờ là dự kiến cho một người làm chính, chưa gồm thời gian chờ cấp quyền truy cập ·
+    Mã nguồn: <code>github.com/CyrusDev1512/dvs-baodon</code>
   </footer>
 
 </div>
